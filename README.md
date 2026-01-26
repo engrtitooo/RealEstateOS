@@ -1,11 +1,11 @@
 # 🏡 RealEstateOS
 
-**Transform empty properties into dream homes instantly with Gemini 2.0 and Imagen 3.**
+**Transform empty properties into dream homes instantly with Gemini 3.0 Pro.**
 
 ![Project Banner](public/banner-placeholder.png) <!-- Replace with an actual screenshot or banner -->
 
 ## 🏆 Built for the Google Gemini API Developer Competition
-**RealEstateOS** is an AI-powered platform that revolutionizes real estate marketing. By leveraging the multimodal capabilities of **Gemini 2.0 Flash** and the photorealistic generation of **Imagen 3**, we automate the most expensive and time-consuming parts of selling a home: staging and design visualization.
+**RealEstateOS** is an AI-powered platform that revolutionizes real estate marketing. By leveraging the advanced multimodal capabilities of **Gemini 3.0 Pro**, we automate the most expensive and time-consuming parts of selling a home: staging, design visualization, and listing creation.
 
 ---
 
@@ -16,33 +16,31 @@ In real estate, **visualization is everything**.
 *   **Floor plans are abstract:** 2D blueprints are hard for the average buyer to understand emotionally.
 
 ## 🚀 The Solution
-**RealEstateOS** provides a comprehensive suite of AI tools to "finish" a home digitally in seconds.
+**RealEstateOS** provides a comprehensive suite of AI tools to "finish" a home digitally in seconds, powered entirely by a single, unified model: **Gemini 3.0 Pro**.
 
 ### Key Features
 
-#### 1. 🛋️ AI Virtual Staging (Multimodal Vision)
-Upload a photo of an empty room. Our system uses **Gemini 2.0 Flash** to analyze the room's geometry, lighting, and architectural features (windows, doors, perspective). It then engineers a precise prompt for **Imagen 3** to furnish the room in your chosen style (Modern, Scandinavian, Luxury, etc.) while **preserving the exact camera angle and room structure**.
+#### 1. 🛋️ AI Virtual Staging
+Upload a photo of an empty room. **Gemini 3.0 Pro** analyzes the room's geometry, lighting, and architectural features (windows, doors, perspective). It then generates a stunning, professionally staged version of the room in your chosen style (Modern, Scandinavian, Luxury, etc.), preserving the exact camera angle and structural integrity.
 
 #### 2. 🏠 Floor Plan to Full Home Design
 Upload a simple 2D floor plan (image or PDF).
-*   **Analyze:** Gemini Vision extracts every room, its function, and dimensions from the blueprint.
+*   **Analyze:** Gemini 3.0 Pro's vision capabilities extract every room, its function, and dimensions from the blueprint.
 *   **Design:** The AI creates a cohesive "Design System" (flooring, materials, color palette) for the whole house.
 *   **Visualize:** Generates a stunning **3D Isometric View** of the entire home layout.
-*   **Render:** Automatically generates photorealistic views for each individual room.
+*   **Render:** Automatically creates photorealistic views for each individual room throughout the home.
 
 #### 3. ✍️ Instant MLS Listing Copy
-Stop struggling with descriptions. Based on the visual analysis of the home's features and the applied design style, **Gemini** generates professional, emotional, and sales-ready listing descriptions in seconds.
+Stop struggling with descriptions. Based on the visual analysis of the home's features and the applied design style, **Gemini 3.0 Pro** generates professional, emotional, and sales-ready listing descriptions in seconds.
 
 ---
 
 ## 🛠️ Tech Stack & AI Models
 
 *   **Frontend:** Next.js 14, React, TailwindCSS, Framer Motion
-*   **AI Orchestration:** Google Generative AI SDK (`@google/generative-ai`)
-*   **Vision & Reasoning Model:** `gemini-2.0-flash-exp`
-    *   Used for: Room geometry analysis, floor plan understanding, design system creation, and prompt engineering.
-*   **Image Generation Model:** `imagen-3.0-generate-002`
-    *   Used for: Photorealistic virtual staging, 3D floor plan rendering, and interior design visualization.
+*   **AI Engine:** **Gemini 3.0 Pro**
+    *   **Unified Multimodal Power:** We utilize Gemini 3.0 Pro for *all* tasks: visual reasoning, architectural analysis, creative direction, image generation, and copywriting.
+    *   **Zero-Shot Reasoning:** Leveraging the model's advanced understanding of spatial relationships and design aesthetics without complex fine-tuning.
 
 ---
 
@@ -93,14 +91,14 @@ Stop struggling with descriptions. Based on the visual analysis of the home's fe
 
 ## 🧠 How It Works (Under the Hood)
 
-1.  **The "Director" Agent (Gemini 2.0 Flash):**
-    When you upload an image, we don't just send it to an image generator. We first pass it to Gemini 2.0 Flash with a system prompt acting as a "Senior Interior Designer". It analyzes the *physics* of the room—light sources, perspective lines, and scale.
+1.  **Unified Intelligence (Gemini 3.0 Pro):**
+    Unlike traditional pipelines that chain multiple weak models, RealEstateOS uses the massive context window and multimodal reasoning of Gemini 3.0 Pro to handle the entire pipeline.
+    
+2.  **Visual Reasoning:**
+    When you upload a photo, Gemini 3.0 Pro doesn't just "see" pixels; it understands the *physics* of the room—light sources, perspective lines, and scale.
 
-2.  **Prompt Engineering:**
-    Gemini then writes a highly technical prompt for Imagen 3. Instead of just saying "add a sofa", it specifies "a low-profile beige linen sofa positioned at coordinates X,Y to match the vanishing point of the left wall, lit by soft afternoon sun from the west-facing window."
-
-3.  **Generation:**
-    Imagen 3 executes this prompt, filling the empty space with furniture that matches the perspective perfectly.
+3.  **Generative Design:**
+    Using this deep understanding, the model generates furniture and decor that fit perfectly into the scene, respecting the original lighting and geometry of the user's home.
 
 ---
 
