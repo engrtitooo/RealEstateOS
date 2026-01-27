@@ -10,7 +10,7 @@
 export interface DesignSystem {
     flooring: string;
     wallColorPalette: string[];
-    lightingTemperature: 'warm' | 'neutral' | 'cool';
+    lightingTemperature: string;
     lightingStyle: string;
     furnitureAesthetic: string;
     materialMood: string[];

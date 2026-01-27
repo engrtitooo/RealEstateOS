@@ -12,7 +12,8 @@ import type {
     FloorPlanAnalysis,
     StyleType,
     DesignSystem,
-    Room
+    Room,
+    RoomFunction
 } from '@/types/project';
 
 // Validate style input
@@ -96,14 +97,16 @@ function validateAnalysis(data: unknown): data is FloorPlanAnalysis {
         if (!room || typeof room !== 'object') return false;
         if (typeof room.name !== 'string') return false;
         if (typeof room.function !== 'string') return false;
-        if (!['small', 'medium', 'large'].includes(room.approxSize)) return false;
+        // Relax strict enum check to allow case variations (we normalize later)
+        if (typeof room.approxSize !== 'string') return false;
     }
 
     // Validate design system
     const ds = obj.designSystem as Record<string, unknown>;
     if (typeof ds.flooring !== 'string') return false;
     if (!Array.isArray(ds.wallColorPalette)) return false;
-    if (!['warm', 'neutral', 'cool'].includes(ds.lightingTemperature as string)) return false;
+    // Allow professional lighting descriptions (e.g. "3000K")
+    if (typeof ds.lightingTemperature !== 'string') return false;
 
     return true;
 }
@@ -113,7 +116,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzePl
         // Parse request body
         const body = await request.json() as AnalyzePlanRequest;
 
-        // Validate required fields
+        // Validate required fields 
         if (!body.floorPlanBase64) {
             return NextResponse.json(
                 { success: false, error: 'Floor plan image is required' },
@@ -160,9 +163,34 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzePl
                 throw new Error('Invalid response structure from AI');
             }
 
+            // Normalize room sizes and functions to ensure they match expected values
+            const normalizedRooms = parsed.rooms.map(room => {
+                // Normalize size
+                const lowerSize = String(room.approxSize).toLowerCase();
+                let validSize: 'small' | 'medium' | 'large' = 'medium';
+                if (lowerSize.includes('small')) validSize = 'small';
+                else if (lowerSize.includes('large') || lowerSize.includes('huge') || lowerSize.includes('spacious')) validSize = 'large';
+                else validSize = 'medium';
+
+                // Normalize function (simple exact match attempt to standard keys, or fallback to original)
+                // The prompt asks for specific keys, but we'll clean it just in case
+                let validFunction = String(room.function).toLowerCase().trim();
+                const standardFunctions = ['sleeping', 'cooking', 'living', 'dining', 'bathing', 'working', 'storage', 'utility', 'entertainment', 'outdoor'];
+
+                // If the model returned "cooking area", find "cooking"
+                const foundFunction = standardFunctions.find(f => validFunction.includes(f));
+                if (foundFunction) validFunction = foundFunction;
+
+                return {
+                    ...room,
+                    approxSize: validSize,
+                    function: validFunction as RoomFunction
+                };
+            });
+
             analysis = {
                 overviewPrompt: parsed.overviewPrompt,
-                rooms: parsed.rooms,
+                rooms: normalizedRooms,
                 designSystem: {
                     ...parsed.designSystem,
                     overallStyle: body.style, // Ensure style matches request

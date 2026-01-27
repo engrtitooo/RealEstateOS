@@ -69,15 +69,29 @@ export function createImagePart(base64Data: string, mimeType: string): Part {
  * Parse JSON from Gemini response, handling markdown code blocks
  */
 export function parseJsonResponse<T>(text: string): T {
-    // Remove markdown code blocks if present
-    let cleanText = text.trim();
+    try {
+        let cleanText = text.trim();
 
-    // Handle ```json ... ``` blocks
-    if (cleanText.startsWith('```')) {
-        cleanText = cleanText.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+        // 1. Try to match markdown code blocks
+        const jsonBlockMatch = cleanText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (jsonBlockMatch) {
+            cleanText = jsonBlockMatch[1];
+        }
+
+        // 2. Locate the first '{' and last '}' to extract the JSON object
+        // This handles cases where the model adds "Here is the JSON:" preamble
+        const firstBrace = cleanText.indexOf('{');
+        const lastBrace = cleanText.lastIndexOf('}');
+
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            cleanText = cleanText.substring(firstBrace, lastBrace + 1);
+        }
+
+        return JSON.parse(cleanText) as T;
+    } catch (error) {
+        console.error('JSON Parse Error. Raw text:', text);
+        throw error;
     }
-
-    return JSON.parse(cleanText) as T;
 }
 
 /**
