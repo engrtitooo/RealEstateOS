@@ -83,19 +83,64 @@ export function parseJsonResponse<T>(text: string): T {
 /**
  * Generate an image using Imagen 3
  * Uses the Gemini API with Imagen 3 model for high-quality image generation
+ * Falls back to room-type-specific architectural images
  */
 export async function generateImage(prompt: string): Promise<string> {
-    // Curated professional interior design images as fallback
-    const fallbackImages = [
-        'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80',
-        'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80',
-        'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80',
-        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80',
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80',
-        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
-        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80',
-        'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800&q=80',
-    ];
+    // Room-type-specific architectural fallback images (NO people, professional real estate photography)
+    const fallbackImagesByType: Record<string, string[]> = {
+        bedroom: [
+            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80', // Modern bedroom
+            'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80', // Luxury bedroom
+            'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800&q=80', // Scandinavian bedroom
+        ],
+        kitchen: [
+            'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80', // Modern kitchen
+            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80', // White kitchen
+            'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&q=80', // Contemporary kitchen
+        ],
+        living: [
+            'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80', // Modern living room
+            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80', // Contemporary living
+            'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80', // Minimalist living
+        ],
+        bathroom: [
+            'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&q=80', // Modern bathroom
+            'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&q=80', // Luxury bathroom
+            'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80', // Clean bathroom
+        ],
+        dining: [
+            'https://images.unsplash.com/photo-1617806118233-18e1de247200?w=800&q=80', // Modern dining
+            'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80', // Contemporary dining
+        ],
+        outdoor: [
+            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80', // Patio
+            'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80', // Terrace
+        ],
+        overview: [
+            'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80', // Open floor plan
+            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80', // Modern interior
+        ],
+        default: [
+            'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?w=800&q=80', // General interior
+            'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800&q=80', // Clean interior
+        ],
+    };
+
+    // Detect room type from prompt
+    function detectRoomType(promptText: string): string {
+        const lower = promptText.toLowerCase();
+        if (lower.includes('bedroom') || lower.includes('sleeping') || lower.includes('master')) return 'bedroom';
+        if (lower.includes('kitchen') || lower.includes('cooking')) return 'kitchen';
+        if (lower.includes('living') || lower.includes('lounge') || lower.includes('family room')) return 'living';
+        if (lower.includes('bath') || lower.includes('toilet') || lower.includes('ensuite') || lower.includes('shower')) return 'bathroom';
+        if (lower.includes('dining')) return 'dining';
+        if (lower.includes('patio') || lower.includes('outdoor') || lower.includes('deck') || lower.includes('terrace')) return 'outdoor';
+        if (lower.includes('isometric') || lower.includes('overview') || lower.includes('cutaway') || lower.includes('floor plan')) return 'overview';
+        return 'default';
+    }
+
+    const roomType = detectRoomType(prompt);
+    const roomFallbacks = fallbackImagesByType[roomType] || fallbackImagesByType.default;
 
     try {
         // Use Imagen 3 for image generation
@@ -128,10 +173,10 @@ Magazine-quality, photorealistic, natural lighting, high resolution.`;
 
         // Fallback if no image generated
         console.log('Imagen 3 did not return image, using fallback');
-        return fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+        return roomFallbacks[Math.floor(Math.random() * roomFallbacks.length)];
     } catch (error) {
         console.error('Imagen 3 generation error, using fallback:', error);
-        return fallbackImages[Math.floor(Math.random() * fallbackImages.length)];
+        return roomFallbacks[Math.floor(Math.random() * roomFallbacks.length)];
     }
 }
 

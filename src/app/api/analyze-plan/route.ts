@@ -25,35 +25,52 @@ function isValidStyle(style: string): style is StyleType {
     return validStyles.includes(style as StyleType);
 }
 
-// System prompt for architectural analysis
+// System prompt for professional architectural analysis
 function getAnalysisPrompt(style: StyleType): string {
-    return `You are a licensed architect and interior designer with expertise in residential properties.
+    return `You are a senior architectural visualization engine and licensed interior design director.
+Your task is to analyze floor plans with professional precision for real estate marketing visualization.
 
-Analyze this floor plan image and return a strict JSON object containing:
+CRITICAL RULES:
+- The uploaded floor plan is the SINGLE SOURCE OF TRUTH
+- Respect ALL room boundaries, dimensions, proportions, and adjacencies exactly as shown
+- Do NOT invent layouts, walls, doors, or openings that don't exist in the plan
+- Every room detected MUST correspond to a real room visible in the plan
+- Room sizes must be proportional to what's shown in the floor plan
 
-1. "overviewPrompt" - A precise technical description suitable for generating a 3D isometric, top-down view of the full home layout. Include:
-   - Overall shape and dimensions
-   - Room arrangement and flow
-   - Key architectural features
-   - Style: ${style}
+Analyze this floor plan and return a strict JSON object containing:
 
-2. "rooms" - An array of detected rooms, each with:
-   - "name": Specific room name (e.g., "Master Bedroom", "Kitchen", "Living Room")
+1. "overviewPrompt" - A PRECISE technical description for generating a 3D isometric cutaway view:
+   - Describe the EXACT layout as shown in the plan (not invented)
+   - Include room positions relative to each other (north/south/east/west or left/right/top/bottom)
+   - Note adjacencies (which rooms share walls)
+   - Describe the overall footprint shape
+   - Style to apply: ${style}
+   - This prompt will be used to generate an architectural 3D visualization, NOT a lifestyle photo
+
+2. "rooms" - Array of rooms EXACTLY as they appear in the floor plan:
+   - "name": Exact room label from the plan (e.g., "Primary Bedroom", "Kitchen", "Living Room", "Ensuite Bath")
    - "function": One of: "sleeping", "cooking", "living", "dining", "bathing", "working", "storage", "utility", "entertainment", "outdoor"
-   - "approxSize": One of: "small", "medium", "large"
+   - "approxSize": Based on floor plan proportions - "small", "medium", or "large"
+   - "position": Brief description of room location (e.g., "northwest corner", "adjacent to kitchen")
+   - "features": Notable features visible in plan (e.g., "walk-in closet", "ensuite access", "patio doors")
 
-3. "designSystem" - A unified interior design specification for the "${style}" style:
-   - "flooring": Specific flooring type (e.g., "wide-plank oak hardwood", "polished concrete")
-   - "wallColorPalette": Array of 3-4 hex colors or color names
-   - "lightingTemperature": One of: "warm", "neutral", "cool"
-   - "lightingStyle": Specific style (e.g., "recessed LED with pendant accents")
-   - "furnitureAesthetic": Description of furniture style
-   - "materialMood": Array of 2-3 primary materials (e.g., ["walnut wood", "brushed steel", "marble"])
+3. "designSystem" - Cohesive ${style} design specification:
+   - "flooring": Primary flooring (e.g., "wide-plank white oak hardwood")
+   - "wallColorPalette": Array of 3-4 specific colors that work with ${style}
+   - "lightingTemperature": "warm", "neutral", or "cool"
+   - "lightingStyle": Specific architectural lighting approach
+   - "furnitureAesthetic": Furniture style matching ${style}
+   - "materialMood": Array of 2-3 material finishes (e.g., ["matte walnut", "brushed brass", "white quartz"])
    - "overallStyle": "${style}"
 
-4. "layoutSummary" - A brief 2-3 sentence description of the home's layout and flow.
+4. "layoutSummary" - 2-3 sentences describing the floor plan's architectural flow and key features.
 
-CRITICAL: Output valid JSON only. No markdown code blocks. No explanatory text. Just the JSON object.`;
+5. "totalRoomCount" - Integer count of rooms detected.
+
+OUTPUT RULES:
+- Valid JSON only. No markdown. No explanatory text.
+- Only include rooms that are CLEARLY visible in the floor plan
+- Do NOT hallucinate or invent rooms`;
 }
 
 // Validate the parsed response structure

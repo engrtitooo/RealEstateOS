@@ -12,7 +12,7 @@ import type {
     DesignSystem
 } from '@/types/project';
 
-// Create interior design prompt using Gemini
+// Create professional architectural interior design prompt
 async function createInteriorPrompt(
     roomName: string,
     designSystem: DesignSystem,
@@ -22,36 +22,63 @@ async function createInteriorPrompt(
     const model = getTextModel();
 
     const designSystemText = `
-Design System:
+Design System (MUST follow exactly):
 - Flooring: ${designSystem.flooring}
 - Wall Colors: ${designSystem.wallColorPalette.join(', ')}
 - Lighting: ${designSystem.lightingTemperature} temperature, ${designSystem.lightingStyle}
 - Furniture Style: ${designSystem.furnitureAesthetic}
 - Materials: ${designSystem.materialMood.join(', ')}
 - Overall Style: ${designSystem.overallStyle}
-  `.trim();
+`.trim();
 
-    const prompt = `Write a photorealistic interior design prompt for generating an image of a ${roomName}.
+    const prompt = `You are a senior architectural visualization specialist creating prompts for professional real estate marketing renders.
 
-Room Details:
-- Function: ${roomFunction}
-- Approximate Size: ${approxSize}
+Generate a detailed image prompt for a ${roomName} that is a ${approxSize}-sized ${roomFunction} space.
 
 ${designSystemText}
 
-Requirements:
-1. The prompt should describe an eye-level camera perspective
-2. Follow the Design System strictly for all elements
-3. The layout should be appropriate for a ${approxSize} ${roomFunction} room
-4. This is a concept render derived from a floor plan—do not invent precise structural details such as exact window placement or ceiling height
-5. Produce a professional, magazine-quality interior scene
-6. Include specific furniture pieces, decor, and lighting fixtures that match the style
-7. Describe the atmosphere, mood, and quality of light
+CRITICAL REQUIREMENTS FOR THE IMAGE PROMPT:
+1. This is ARCHITECTURAL VISUALIZATION, not lifestyle photography
+2. NO people, NO hands, NO lifestyle scenes
+3. Wide-angle architectural lens perspective (equivalent to 16-24mm)
+4. Eye-level camera height (approximately 4-5 feet)
+5. Vertical lines must be straight (no lens distortion)
+6. Professional real estate photography lighting
+7. Furniture must be CORRECT for room function:
+   - Bedroom = bed, nightstands, dresser, NOT kitchen items
+   - Kitchen = cabinets, counters, appliances, NOT living room furniture
+   - Bathroom = vanity, toilet, shower/tub, NOT bedroom furniture
+   - Living Room = sofa, coffee table, entertainment, NOT cooking equipment
+8. Furniture SCALE must match ${approxSize} room size
+9. Clear circulation paths - no cluttered or cramped layouts
+10. Materials must look buildable: real wood grain, stone veining, fabric texture
+11. Magazine-quality architectural photography
+12. Empty room staged professionally - no occupants
 
-Output ONLY the image generation prompt, nothing else. The prompt should be 2-3 detailed sentences.`;
+Room-specific requirements for ${roomFunction}:
+${getRoomSpecificRequirements(roomFunction)}
+
+Output ONLY the image generation prompt. 2-3 detailed sentences describing the architectural interior render. NO explanatory text.`;
 
     const result = await model.generateContent(prompt);
     return result.response.text().trim();
+}
+
+// Room-specific staging requirements
+function getRoomSpecificRequirements(roomFunction: string): string {
+    const requirements: Record<string, string> = {
+        sleeping: 'Include a properly sized bed (queen/king for primary, twin/full for secondary), nightstands, soft ambient lighting, calm color palette. NO kitchen appliances.',
+        cooking: 'Show countertops, cabinetry, sink, and cooking appliances. Clean surfaces, architectural lighting above island/counters. NO bedroom furniture.',
+        living: 'Feature seating arrangement (sofa, armchairs), coffee table, entertainment area. Natural light from windows. NO kitchen or bathroom fixtures.',
+        dining: 'Include dining table with chairs, pendant lighting above table, possibly a sideboard. Formal or casual depending on style. NO beds or cooking equipment.',
+        bathing: 'Show vanity with sink, mirror, toilet (can be out of frame), shower or tub. Clean tile work, proper bathroom fixtures. NO bedroom or kitchen items.',
+        working: 'Include desk, office chair, task lighting, bookshelves or storage. Professional but personalized. NO bathroom fixtures.',
+        storage: 'Show organized shelving, storage systems, good lighting. Functional and clean.',
+        utility: 'Display laundry appliances, utility sink if applicable, organized storage. Practical lighting.',
+        entertainment: 'Feature comfortable seating, media equipment area, ambient lighting. Welcoming atmosphere.',
+        outdoor: 'Show patio furniture, outdoor lighting, landscaping visible. Weather-appropriate staging.',
+    };
+    return requirements[roomFunction] || 'Stage appropriately for the room function with correct furniture types.';
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<GenerateRoomResponse>> {
