@@ -142,24 +142,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
                 // CASE B: GEOMETRY + STYLE REFERENCE (Ultimate Consistency)
                 planDrivenPrompt = `TWO-IMAGE RENDERING TASK:
 
-IMAGE 1 = FLOOR PLAN (Use for GEOMETRY ONLY)
+IMAGE 1 = SCHEMATIC FLOOR PLAN (GEOMETRY SOURCE)
 - Find the room labeled "${body.roomName}" in Image 1.
 - Use that room's exact walls, doors, and window positions.
 - Do NOT add or remove any architectural elements.
 
-IMAGE 2 = 3D HOME OVERVIEW (Use for STYLE ONLY)
-- COPY the exact flooring from Image 2 (material, color, grain direction, plank width).
-- COPY the exact wall paint color from Image 2.
-- COPY the exact lighting temperature from Image 2 (if warm in Image 2, be warm; if cool, be cool).
-- COPY the furniture style from Image 2 (if modern in Image 2, use modern furniture).
-- The output MUST look like a photo taken inside the SAME house as Image 2.
+IMAGE 2 = RENDERED FLOOR PLAN (STYLE + FURNITURE SOURCE)
+- This is a top-down 2D/3D render of the same floor plan.
+- COPY the exact flooring texture and color from Image 2 for this room.
+- COPY the exact furniture shown in Image 2 for this room (e.g., if Image 2 shows a King bed in the Master, use the SAME style bed).
+- COPY the wall color and finish from Image 2.
+- Match the lighting mood (warm/cool) from Image 2.
 
-ROOM TO RENDER: ${body.roomName}
+TASK: Render an interior perspective photo of "${body.roomName}" as if you were standing inside the room, looking at the furniture shown in Image 2.
+
+The output MUST look like a real photograph taken inside the room shown in Image 2.
 
 STAGING SPECIFICATION:
 ${interiorPrompt}
 
-OUTPUT: One hyper-realistic interior photograph of ${body.roomName}, visually identical to the home in Image 2.`;
+OUTPUT: One hyper-realistic interior photograph of ${body.roomName}, with furniture and textures matching Image 2 exactly.`;
             } else {
                 // CASE A: GEOMETRY ONLY (Legacy/Fallback)
                 planDrivenPrompt = `LOCATE the room labeled "${body.roomName}" in the provided floor plan.

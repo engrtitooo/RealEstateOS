@@ -30,18 +30,23 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateO
             );
         }
 
-        // Create professional architectural 3D overview prompt
-        const enhancedPrompt = `You are an architectural visualization engine. Use the uploaded floor plan as the single source of truth for geometry and layout. Generate one coherent, professionally designed 3D home interior overview that reflects the full plan.
+        // Build style description from design system
+        const styleDescription = `${body.designSystem.overallStyle} style with ${body.designSystem.flooring} flooring, ${body.designSystem.wallColorPalette.join('/')} wall palette, ${body.designSystem.furnitureAesthetic} furniture`;
 
-Style: high-end ${body.designSystem.overallStyle} architectural interior design.
-Flooring: ${body.designSystem.flooring}
-Palette: ${body.designSystem.wallColorPalette.join(', ')}
+        // Create professional architectural 3D overview prompt - USER PROVIDED TEMPLATE
+        const enhancedPrompt = `Transform this schematic floor plan into a professional, photorealistic architectural top-down 2D/3D render.
 
-Rendering requirements: photoreal archviz quality, realistic materials, correct scale, clean verticals, architectural wide-angle lens (18–24mm), ray-traced global illumination, ambient occlusion, texture-rich surfaces, realistic shadows, natural daylight + warm interior lighting balanced at ~3500–4000K, no people, no text, no watermark.
+Style: ${styleDescription}.
 
-Non-negotiable: do not change the plan geometry. Do not add rooms or openings. Maintain consistent flooring and wall palette throughout the whole home.
+Requirements:
+1. **FURNISH**: Add realistic furniture appropriate for each room (e.g., King bed in Master, Dining table in Dining area, Sofas in Living).
+2. **TEXTURE**: Apply realistic flooring textures (wood, tile, carpet) and wall finishes.
+3. **LIGHTING**: Add soft ambient lighting and shadows to create depth.
+4. **ACCURACY**: Respect the exact wall layout, window positions, and door locations from the input schematic.
 
-Layout Context from Plan:
+The output should look like a high-end real estate marketing floor plan.
+
+Layout Context from Analysis:
 ${body.overviewPrompt}`;
 
         // Generate the overview image using Gemini 2.0 Flash (Plan-Driven) or Imagen (Text-Only fallback)
