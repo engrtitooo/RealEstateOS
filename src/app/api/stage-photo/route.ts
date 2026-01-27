@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { analyzeImage, getTextModel, generateImage } from '@/lib/gemini';
+import { analyzeImage, getTextModel, editImage } from '@/lib/gemini';
 import type {
     StagePhotoRequest,
     StagePhotoResponse,
@@ -127,8 +127,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<StagePhot
             body.style
         );
 
-        // Generate the staged image using Imagen
-        const imageUrl = await generateImage(stagingPrompt);
+        // Edit the original image to add staging (preserves room geometry)
+        const imageUrl = await editImage(body.photoBase64, body.mimeType, stagingPrompt);
 
         // Optionally generate caption
         let caption: string | undefined;
