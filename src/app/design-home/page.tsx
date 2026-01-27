@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import AccessGate from '@/components/AccessGate';
+import JSZip from 'jszip';
 import type {
     StyleType,
     AnalyzePlanResponse,
@@ -171,6 +172,73 @@ export default function DesignHomePage() {
         await navigator.clipboard.writeText(text);
         setCopiedField(field);
         setTimeout(() => setCopiedField(null), 2000);
+    };
+
+    const handleDownloadImage = async (imageUrl: string, filename: string) => {
+        try {
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Download failed:', err);
+        }
+    };
+
+    const handleDownloadAll = async () => {
+        try {
+            const zip = new JSZip();
+
+            // Add Overview
+            if (overview3d) {
+                const imgData = await fetch(overview3d).then(r => r.blob());
+                zip.file("overview.png", imgData);
+            }
+
+            // Add Rooms
+            for (const room of generatedRooms) {
+                if (room.imageUrl) {
+                    const imgData = await fetch(room.imageUrl).then(r => r.blob());
+                    const safeName = room.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    zip.file(`rooms/${safeName}.png`, imgData);
+                }
+            }
+
+            // Add Description
+            if (description) {
+                const textContent = `
+HEADLINE: ${description.headline}
+
+SUMMARY:
+${description.short}
+
+FULL DESCRIPTION:
+${description.full}
+                `.trim();
+                zip.file("listing-description.txt", textContent);
+            }
+
+            // Generate ZIP
+            const content = await zip.generateAsync({ type: "blob" });
+            const url = window.URL.createObjectURL(content);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "realestateos-design-package.zip";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+        } catch (err) {
+            console.error('ZIP generation failed:', err);
+            setError('Failed to create download package');
+        }
     };
 
     const handleReset = () => {
@@ -342,8 +410,17 @@ export default function DesignHomePage() {
                                     <h2 className="text-xl font-display font-bold mb-4">Staged Rooms</h2>
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         {generatedRooms.map((room, i) => (
-                                            <div key={i} className="rounded-xl overflow-hidden bg-white/5">
+                                            <div key={i} className="group relative rounded-xl overflow-hidden bg-white/5">
                                                 <img src={room.imageUrl} alt={room.name} className="w-full aspect-video object-cover" />
+                                                <button
+                                                    onClick={() => handleDownloadImage(room.imageUrl, `${room.name.replace(/\s+/g, '-').toLowerCase()}.png`)}
+                                                    className="absolute top-2 right-2 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-all backdrop-blur-sm"
+                                                    title="Download Image"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                    </svg>
+                                                </button>
                                                 <div className="p-3">
                                                     <p className="font-semibold">{room.name}</p>
                                                 </div>
@@ -409,6 +486,16 @@ export default function DesignHomePage() {
                                             </div>
                                             <p className="text-gray-300 text-sm">{description.short}</p>
                                         </div>
+
+                                        <button
+                                            onClick={handleDownloadAll}
+                                            className="w-full btn-primary py-3 rounded-xl mb-3 flex items-center justify-center gap-2"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Download Package (ZIP)
+                                        </button>
 
                                         <button
                                             onClick={handleReset}

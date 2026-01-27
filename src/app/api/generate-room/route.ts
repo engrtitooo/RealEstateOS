@@ -29,6 +29,14 @@ Design System Specification (STRICT ADHERENCE):
 - Furniture Style: ${designSystem.furnitureAesthetic}
 - Material Finishes: ${designSystem.materialMood.join(', ')}
 - Architecture Style: ${designSystem.overallStyle}
+
+GLOBAL DESIGN AUTHORITY (ONE HOUSE RULE):
+This room is part of a Single Unified Home. It MUST match the architectural identity of the 3D Overview.
+- Use the SAME floor finish.
+- Use the SAME wall palette.
+- Use the SAME trim style and lighting temperature.
+- The home must feel like it was designed by one architect. 
+- "This is the same house—just a closer look."
 `.trim();
 
     const prompt = `You are RealEstateOS Architectural Visualization Engine.
