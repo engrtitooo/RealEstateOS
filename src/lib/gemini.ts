@@ -348,7 +348,9 @@ ${prompt}`;
                 }
             ],
             generationConfig: {
-                temperature: 0.1, // Reinforce low temperature
+                temperature: 0.0, // MAXIMUM DETERMINISM
+                topP: 1.0,        // Do not cut off tokens
+                topK: 1,          // Only pick the most likely token
                 // @ts-expect-error - multimodal generation support
                 responseModalities: ['image', 'text'],
             },

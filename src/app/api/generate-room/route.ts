@@ -139,32 +139,31 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
             let styleReferenceBase64 = body.overviewBase64;
 
             if (styleReferenceBase64) {
-                // CASE B: GEOMETRY + STYLE REFERENCE (CONTRACT ENFORCEMENT)
+                // CASE B: GEOMETRY + STYLE REFERENCE (Texture Projection Mode)
                 planDrivenPrompt = `Role:
-You are a Professional Architectural Visualization Engine. Your highest priority is Geometric Fidelity and Visual Continuity.
+You are a High-Fidelity Rendering Engine. 
 
 Objective:
-Produce a Staged Room render that is a direct perspective view from the Master 3D Model (Image 2).
+Create a "Staged Room Perspective" by mentally projecting the textures from the Master Model (Image 2) onto the Geometry of the Plan (Image 1).
 
-Non-Negotiable Rules:
-1. Geometry Lock: The room boundaries MUST match the input plan (Image 1) exactly.
-2. Single Source of Truth: The 3D Overview (Image 2) is the Master Model. You must match it.
-3. No Hallucination: Do NOT add rooms or features not present in the plan.
+INPUTS:
+Image 1: Geometry Map (Floor Plan)
+Image 2: Texture Atlas (3D Master Model)
 
-Input Context:
-Image 1: Floor Plan (Geometry Source)
-Image 2: 3D Master Model (Style Source)
+INSTRUCTIONS:
+1. GEOMETRY: Build the room exactly as shown in Image 1.
+2. TEXTURE PROJECTION (CRITICAL):
+   - Look at the flooring in Image 2. Project that EXACT material onto the floor of this room.
+   - Look at the walls in Image 2. Project that EXACT paint/finish onto the walls of this room.
+   - Look at the furniture in Image 2. If you see a bed/sofa in this room in Image 2, render that EXACT same object from a close-up angle.
+3. LIGHTING MATCH:
+   - Identify the lighting condition in Image 2 (e.g., "Warm Sunset" or "Cool Daylight").
+   - Replicate that EXACT lighting condition in this room.
+4. DETAIL CONSISTENCY:
+   - Do not change one pixel of the design language.
+   - If Image 2 has white baseboards, this room MUST have white baseboards.
 
-Rendering Process - Step 5 (Staged Rooms):
-- Locate the room "${body.roomName}" in the 3D Master Model.
-- Place camera inside that space at eye level.
-- Render it using the EXACT same materials, lighting, and palette as the Master Model.
-
-Required Output:
-A photorealistic interior perspective of "${body.roomName}".
-- Flooring: Must match Image 2 exactly.
-- Wall Colors: Must match Image 2 exactly.
-- Lighting: Must match Image 2's temperature exactly.
+TASK: Render a photo-real perspective inside "${body.roomName}".
 
 STAGING SPECIFICATION:
 ${interiorPrompt}`;
