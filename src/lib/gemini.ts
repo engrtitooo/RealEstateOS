@@ -332,25 +332,13 @@ If Image 2 shows oak hardwood with warm 3500K lighting, your output MUST show id
 `;
         }
 
-        // Strict architectural prompt wrapper
-        const architecturalPrompt = `ARCHITECTURAL VISUALIZATION TASK (STRICT GEOMETRY + STYLE ADHERENCE):
+        // Minimal wrapper to define inputs, trusting the caller's strict contract for the rest
+        const architecturalPrompt = `INPUTS:
+Image 1: Floor Plan (GEOMETRY AUTHORITY)
+${styleReferenceBase64 ? "Image 2: 3D Overview (STYLE AUTHORITY)" : ""}
 
-INPUTS:
-Image 1: Floor Plan (GEOMETRY AUTHORITY - walls, doors, windows)
-${styleReferenceBase64 ? "Image 2: 3D Overview (STYLE AUTHORITY - materials, colors, lighting)" : ""}
-
-TASK: ${prompt}
-
-${styleInstruction}
-
-NON-NEGOTIABLE CONSTRAINTS:
-1. GEOMETRY LOCK: Use Image 1 boundaries EXACTLY. Do NOT invent rooms, move walls, or change proportions.
-2. STYLE LOCK: ${styleReferenceBase64 ? "Copy materials and lighting from Image 2 EXACTLY." : "Use professional archviz materials."}
-3. No people, no pets, no lifestyle props.
-4. Camera: Interior eye-level (5ft height), professional architectural photography.
-5. Rendering: Photoreal, ray-traced lighting, correct shadows, texture-rich surfaces.
-
-Output: ONE high-resolution architectural interior render.`;
+INSTRUCTIONS:
+${prompt}`;
 
         const result = await model.generateContent({
             contents: [
