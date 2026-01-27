@@ -109,7 +109,7 @@ export default function StageRoomPage() {
             {/* Header */}
             <header className="glass-dark sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <Link href="/" onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -176,8 +176,8 @@ export default function StageRoomPage() {
                                         key={style.value}
                                         onClick={() => setSelectedStyle(style.value)}
                                         className={`p-4 rounded-xl text-left transition-all ${selectedStyle === style.value
-                                                ? 'bg-primary-500/20 border-2 border-primary-500'
-                                                : 'bg-white/5 border-2 border-transparent hover:border-white/20'
+                                            ? 'bg-primary-500/20 border-2 border-primary-500'
+                                            : 'bg-white/5 border-2 border-transparent hover:border-white/20'
                                             }`}
                                     >
                                         <p className="font-semibold text-sm mb-1">{style.label}</p>
