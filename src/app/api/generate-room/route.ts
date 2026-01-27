@@ -139,29 +139,35 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
             let styleReferenceBase64 = body.overviewBase64;
 
             if (styleReferenceBase64) {
-                // CASE B: GEOMETRY + STYLE REFERENCE (Ultimate Consistency)
-                planDrivenPrompt = `TWO-IMAGE RENDERING TASK:
+                // CASE B: GEOMETRY + STYLE REFERENCE (CONTRACT ENFORCEMENT)
+                planDrivenPrompt = `Role:
+You are a Professional Architectural Visualization Engine. Your highest priority is Geometric Fidelity and Visual Continuity.
 
-IMAGE 1 = SCHEMATIC FLOOR PLAN (GEOMETRY SOURCE)
-- Find the room labeled "${body.roomName}" in Image 1.
-- Use that room's exact walls, doors, and window positions.
-- Do NOT add or remove any architectural elements.
+Objective:
+Produce a Staged Room render that is a direct perspective view from the Master 3D Model (Image 2).
 
-IMAGE 2 = RENDERED FLOOR PLAN (STYLE + FURNITURE SOURCE)
-- This is a top-down 2D/3D render of the same floor plan.
-- COPY the exact flooring texture and color from Image 2 for this room.
-- COPY the exact furniture shown in Image 2 for this room (e.g., if Image 2 shows a King bed in the Master, use the SAME style bed).
-- COPY the wall color and finish from Image 2.
-- Match the lighting mood (warm/cool) from Image 2.
+Non-Negotiable Rules:
+1. Geometry Lock: The room boundaries MUST match the input plan (Image 1) exactly.
+2. Single Source of Truth: The 3D Overview (Image 2) is the Master Model. You must match it.
+3. No Hallucination: Do NOT add rooms or features not present in the plan.
 
-TASK: Render an interior perspective photo of "${body.roomName}" as if you were standing inside the room, looking at the furniture shown in Image 2.
+Input Context:
+Image 1: Floor Plan (Geometry Source)
+Image 2: 3D Master Model (Style Source)
 
-The output MUST look like a real photograph taken inside the room shown in Image 2.
+Rendering Process - Step 5 (Staged Rooms):
+- Locate the room "${body.roomName}" in the 3D Master Model.
+- Place camera inside that space at eye level.
+- Render it using the EXACT same materials, lighting, and palette as the Master Model.
+
+Required Output:
+A photorealistic interior perspective of "${body.roomName}".
+- Flooring: Must match Image 2 exactly.
+- Wall Colors: Must match Image 2 exactly.
+- Lighting: Must match Image 2's temperature exactly.
 
 STAGING SPECIFICATION:
-${interiorPrompt}
-
-OUTPUT: One hyper-realistic interior photograph of ${body.roomName}, with furniture and textures matching Image 2 exactly.`;
+${interiorPrompt}`;
             } else {
                 // CASE A: GEOMETRY ONLY (Legacy/Fallback)
                 planDrivenPrompt = `LOCATE the room labeled "${body.roomName}" in the provided floor plan.
@@ -170,9 +176,10 @@ RENDER a photorealistic interior view of THIS specific room, matching its geomet
 ${interiorPrompt}`;
             }
 
+            // Execute Generation (for both cases)
             imageUrl = await generateImageFromPlan(
                 body.floorPlanBase64,
-                'image/png', // Default assumption
+                'image/png', // Default
                 planDrivenPrompt,
                 styleReferenceBase64
             );

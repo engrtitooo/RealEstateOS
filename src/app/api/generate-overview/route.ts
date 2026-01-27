@@ -33,18 +33,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateO
         // Build style description from design system
         const styleDescription = `${body.designSystem.overallStyle} style with ${body.designSystem.flooring} flooring, ${body.designSystem.wallColorPalette.join('/')} wall palette, ${body.designSystem.furnitureAesthetic} furniture`;
 
-        // Create professional architectural 3D overview prompt - USER PROVIDED TEMPLATE
-        const enhancedPrompt = `Transform this schematic floor plan into a professional, photorealistic architectural top-down 2D/3D render.
+        // Create professional architectural 3D overview prompt - STRICT GEOMETRIC FIDELITY CONTRACT
+        const enhancedPrompt = `Role:
+You are a Professional Architectural Visualization Engine used in real estate marketing. Your highest priority is Geometric Fidelity. You are not allowed to redesign layouts. You only finish what already exists.
 
-Style: ${styleDescription}.
+Objective:
+Transform the provided floor plan into a single 3D Home Overview (top-down, professional, hyper-realistic).
 
-Requirements:
-1. **FURNISH**: Add realistic furniture appropriate for each room (e.g., King bed in Master, Dining table in Dining area, Sofas in Living).
-2. **TEXTURE**: Apply realistic flooring textures (wood, tile, carpet) and wall finishes.
-3. **LIGHTING**: Add soft ambient lighting and shadows to create depth.
-4. **ACCURACY**: Respect the exact wall layout, window positions, and door locations from the input schematic.
+Non-Negotiable Rules:
+1. Geometry Lock: Walls, doors, windows, corridors, and room boundaries MUST match the input plan exactly. You may NOT move, resize, remove, or invent any wall, door, or room.
+2. Single Source of Truth: Treat this Overview as the master model.
+3. No Hallucination: Do NOT add rooms, windows, or architectural features that are not present.
 
-The output should look like a high-end real estate marketing floor plan.
+Rendering Process:
+Step 1 – Analyze: Identify room polygons, wall thickness, and openings.
+Step 2 – Construct: Build a 3D model by extruding the exact geometry of the plan.
+Step 3 – Style Application: Apply a unified, high-end ${body.designSystem.overallStyle} interior style.
+   - Flooring: ${body.designSystem.flooring}
+   - Palette: ${body.designSystem.wallColorPalette.join(', ')}
+Step 4 – Furnish: Place furniture inside each room boundary only.
+Step 5 – Output: 3D Home Overview. Orthographic top-down. Hyper-realistic. Shows the entire house.
+
+Quality Target:
+8K resolution, texture-rich surfaces, ambient occlusion, soft global illumination, realistic shadows, physically correct lighting, hyper-realistic materials.
 
 Layout Context from Analysis:
 ${body.overviewPrompt}`;
