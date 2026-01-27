@@ -140,17 +140,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
 
             if (styleReferenceBase64) {
                 // CASE B: GEOMETRY + STYLE REFERENCE (Ultimate Consistency)
-                planDrivenPrompt = `RULES (NON-NEGOTIABLE):
+                planDrivenPrompt = `TWO-IMAGE RENDERING TASK:
 
-1. Use Image 1 (Floor Plan) ONLY to determine the room geometry, boundaries, and layout. Do not invent or alter structural elements.
-2. Use Image 2 (3D Overview) ONLY to match style: flooring material/color/direction, wall color, trim/baseboards, lighting temperature, fixture finishes, cabinet style, furniture design language, and overall render look.
-3. The final room render must look like a camera shot taken inside the same home shown in Image 2 (same materials, same lighting mood, same design family).
-4. Professional staging only: correct furniture scale, functional circulation paths, no stock-photo lifestyle scenes, no people, no random props that conflict with the overview style.
+IMAGE 1 = FLOOR PLAN (Use for GEOMETRY ONLY)
+- Find the room labeled "${body.roomName}" in Image 1.
+- Use that room's exact walls, doors, and window positions.
+- Do NOT add or remove any architectural elements.
 
-Output: one hyper-realistic interior render of the requested room (${body.roomName}), consistent with Image 2.
+IMAGE 2 = 3D HOME OVERVIEW (Use for STYLE ONLY)
+- COPY the exact flooring from Image 2 (material, color, grain direction, plank width).
+- COPY the exact wall paint color from Image 2.
+- COPY the exact lighting temperature from Image 2 (if warm in Image 2, be warm; if cool, be cool).
+- COPY the furniture style from Image 2 (if modern in Image 2, use modern furniture).
+- The output MUST look like a photo taken inside the SAME house as Image 2.
 
-Staging Context:
-${interiorPrompt}`;
+ROOM TO RENDER: ${body.roomName}
+
+STAGING SPECIFICATION:
+${interiorPrompt}
+
+OUTPUT: One hyper-realistic interior photograph of ${body.roomName}, visually identical to the home in Image 2.`;
             } else {
                 // CASE A: GEOMETRY ONLY (Legacy/Fallback)
                 planDrivenPrompt = `LOCATE the room labeled "${body.roomName}" in the provided floor plan.

@@ -296,8 +296,14 @@ export async function generateImageFromPlan(
 ): Promise<string> {
     try {
         // Use Gemini 2.0 Flash experimental for plan-driven Image-to-Image generation
+        // CRITICAL: Low temperature for geometry lock
         const model = genAI.getGenerativeModel({
             model: 'gemini-2.0-flash-exp',
+            generationConfig: {
+                temperature: 0.1, // STRICT: Low temperature for accurate, non-creative output
+                topP: 0.9,
+                topK: 40,
+            },
         });
 
         const imagePart = createImagePart(planBase64, mimeType);
@@ -311,32 +317,40 @@ export async function generateImageFromPlan(
             const stylePart = createImagePart(styleReferenceBase64, 'image/png'); // Assumption: PNG/JPEG
             inputParts.push(stylePart);
             styleInstruction = `
-VISUAL STYLE REFERENCE (IMAGE 2):
-The second image provided is the 3D Home Overview. It is the STYLE AUTHORITY.
-- You MUST match the flooring material, wall color, and lighting temperature seen in Image 2.
-- The output must look like it belongs in the same house.
+VISUAL STYLE REFERENCE (IMAGE 2 - MANDATORY MATCH):
+The second image is the 3D Home Overview. It is the ABSOLUTE STYLE AUTHORITY.
+
+YOU MUST EXACTLY REPLICATE:
+- The exact flooring material, color, and grain direction from Image 2.
+- The exact wall paint color and finish from Image 2.
+- The exact lighting temperature (warm/cool) from Image 2.
+- The exact trim/baseboard style from Image 2.
+- The furniture design language (modern, classic, etc.) from Image 2.
+
+The output MUST look like it was rendered from the same 3D model as Image 2.
+If Image 2 shows oak hardwood with warm 3500K lighting, your output MUST show identical oak hardwood with identical 3500K lighting.
 `;
         }
 
         // Strict architectural prompt wrapper
-        const architecturalPrompt = `ARCHITECTURAL VISUALIZATION TASK (STRICT GEOMETRY ADHERENCE):
+        const architecturalPrompt = `ARCHITECTURAL VISUALIZATION TASK (STRICT GEOMETRY + STYLE ADHERENCE):
 
 INPUTS:
-Image 1: Floor Plan (GEOMETRY AUTHORITY)
-${styleReferenceBase64 ? "Image 2: 3D Overview (STYLE AUTHORITY)" : ""}
+Image 1: Floor Plan (GEOMETRY AUTHORITY - walls, doors, windows)
+${styleReferenceBase64 ? "Image 2: 3D Overview (STYLE AUTHORITY - materials, colors, lighting)" : ""}
 
 TASK: ${prompt}
 
 ${styleInstruction}
 
-CONSTRAINTS:
-1. GEOMETRY LOCK: Use Image 1 boundaries strictly. You MUST NOT invent rooms, move walls, or change proportions.
-2. The output must be a rendered view derived DIRECTLY from the provided plan geometry.
-3. No people, no lifestyle scenes.
-4. Professional Architectural Visualization style.
-5. High fidelity materials and lighting.
+NON-NEGOTIABLE CONSTRAINTS:
+1. GEOMETRY LOCK: Use Image 1 boundaries EXACTLY. Do NOT invent rooms, move walls, or change proportions.
+2. STYLE LOCK: ${styleReferenceBase64 ? "Copy materials and lighting from Image 2 EXACTLY." : "Use professional archviz materials."}
+3. No people, no pets, no lifestyle props.
+4. Camera: Interior eye-level (5ft height), professional architectural photography.
+5. Rendering: Photoreal, ray-traced lighting, correct shadows, texture-rich surfaces.
 
-Output the requested image.`;
+Output: ONE high-resolution architectural interior render.`;
 
         const result = await model.generateContent({
             contents: [
@@ -346,6 +360,7 @@ Output the requested image.`;
                 }
             ],
             generationConfig: {
+                temperature: 0.1, // Reinforce low temperature
                 // @ts-expect-error - multimodal generation support
                 responseModalities: ['image', 'text'],
             },
