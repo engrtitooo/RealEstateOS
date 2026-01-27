@@ -1,0 +1,45 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js build output (will be regenerated in Docker)
+.next
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Environment files (secrets should be passed at runtime)
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+
+# Testing
+coverage/
+
+# Documentation
+README.md
+docs/
+
+# Misc
+.DS_Store
+*.pem
+*.log
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore

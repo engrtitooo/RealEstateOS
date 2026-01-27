@@ -89,6 +89,42 @@ Stop struggling with descriptions. Based on the visual analysis of the home's fe
 
 ---
 
+## 🐳 Docker Deployment
+
+### Build & Run Locally with Docker
+
+1.  **Build the Docker image**
+    ```bash
+    docker build -t realestateos .
+    ```
+
+2.  **Run the container**
+    ```bash
+    docker run -p 3000:3000 -e GOOGLE_API_KEY=your_gemini_api_key realestateos
+    ```
+
+3.  Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Deploy to Google Cloud Run
+
+1.  **Push your code to GitHub**
+    ```bash
+    git add .
+    git commit -m "Add Docker support for Cloud Run"
+    git push
+    ```
+
+2.  **Deploy via Cloud Console**
+    - Navigate to [Cloud Run](https://console.cloud.google.com/run)
+    - Click **Create Service**
+    - Select **Continuously deploy from a repository**
+    - Connect your GitHub repository
+    - Choose **Dockerfile** as the build type
+    - Set environment variable: `GOOGLE_API_KEY`
+    - Click **Create**
+
+---
+
 ## 🧠 How It Works (Under the Hood)
 
 1.  **Unified Intelligence (Gemini 3.0 Pro):**
