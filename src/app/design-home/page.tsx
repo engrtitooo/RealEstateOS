@@ -98,13 +98,14 @@ export default function DesignHomePage() {
             setAnalysis(analyzeData.data);
             setWorkflowStep('generating');
 
-            // Step 2: Generate 3D overview
+            // Step 2: Generate 3D overview (Now Plan-Driven)
             const overviewResponse = await fetch('/api/generate-overview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     overviewPrompt: analyzeData.data.overviewPrompt,
                     designSystem: analyzeData.data.designSystem,
+                    floorPlanBase64: base64Data, // Pass the plan!
                 }),
             });
 
@@ -113,7 +114,7 @@ export default function DesignHomePage() {
                 setOverview3d(overviewData.imageUrl);
             }
 
-            // Step 3: Generate room images one by one
+            // Step 3: Generate room images one by one (Now Plan-Driven)
             const rooms: GeneratedRoom[] = [];
             for (let i = 0; i < analyzeData.data.rooms.length; i++) {
                 setCurrentRoomIndex(i);
@@ -127,6 +128,7 @@ export default function DesignHomePage() {
                         designSystem: analyzeData.data.designSystem,
                         approxSize: room.approxSize,
                         function: room.function,
+                        floorPlanBase64: base64Data, // Pass the plan!
                     }),
                 });
 

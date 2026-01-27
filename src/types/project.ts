@@ -133,6 +133,7 @@ export interface GenerateRoomRequest {
     designSystem: DesignSystem;
     approxSize: 'small' | 'medium' | 'large';
     function: RoomFunction;
+    floorPlanBase64?: string; // Optional for backward compatibility, but required for plan-driven flow
 }
 
 export interface GenerateRoomResponse {
@@ -175,6 +176,7 @@ export interface GenerateDescriptionResponse {
 export interface GenerateOverviewRequest {
     overviewPrompt: string;
     designSystem: DesignSystem;
+    floorPlanBase64?: string; // Optional for backward compatibility, but required for plan-driven flow
 }
 
 export interface GenerateOverviewResponse {

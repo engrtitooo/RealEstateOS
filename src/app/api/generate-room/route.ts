@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getTextModel, generateImage } from '@/lib/gemini';
+import { getTextModel, generateImage, generateImageFromPlan } from '@/lib/gemini';
 import type {
     GenerateRoomRequest,
     GenerateRoomResponse,
@@ -114,15 +114,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
         }
 
         // Generate the interior design prompt using Gemini
-        const interiorPrompt = await createInteriorPrompt(
+        let interiorPrompt = await createInteriorPrompt(
             body.roomName,
             body.designSystem,
             body.approxSize,
             body.function
         );
 
-        // Generate the image using Imagen
-        const imageUrl = await generateImage(interiorPrompt);
+        // Generate the image using Gemini 2.0 Flash (Plan-Driven) or Imagen (Text-Only fallback)
+        let imageUrl: string;
+
+        if (body.floorPlanBase64) {
+            // Plan-Driven Flow (Phase 2: Derive Each Room)
+            // Prepend critical instruction to use the visual plan
+            const planDrivenPrompt = `LOCATE the room labeled "${body.roomName}" in the provided floor plan.
+RENDER a photorealistic interior view of THIS specific room, matching its geometry and window placement exactly.
+            
+${interiorPrompt}`;
+
+            imageUrl = await generateImageFromPlan(
+                body.floorPlanBase64,
+                'image/png', // Default assumption
+                planDrivenPrompt
+            );
+        } else {
+            // Text-Only Fallback (Legacy)
+            imageUrl = await generateImage(interiorPrompt);
+        }
 
         return NextResponse.json({
             success: true,

@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { generateImage } from '@/lib/gemini';
+import { generateImage, generateImageFromPlan } from '@/lib/gemini';
 import type {
     GenerateOverviewRequest,
     GenerateOverviewResponse
@@ -63,8 +63,20 @@ NON-NEGOTIABLE RENDERING RULES:
 OUTPUT:
 One high-resolution 3D isometric cutaway of the full home interior.`;
 
-        // Generate the overview image using Imagen
-        const imageUrl = await generateImage(enhancedPrompt);
+        // Generate the overview image using Gemini 2.0 Flash (Plan-Driven) or Imagen (Text-Only fallback)
+        let imageUrl: string;
+
+        if (body.floorPlanBase64) {
+            // Plan-Driven Flow (Visual Plan -> 3D Model)
+            imageUrl = await generateImageFromPlan(
+                body.floorPlanBase64,
+                'image/png', // Default assumption, or pass mimeType in request if added
+                enhancedPrompt
+            );
+        } else {
+            // Text-Only Fallback (Legacy)
+            imageUrl = await generateImage(enhancedPrompt);
+        }
 
         return NextResponse.json({
             success: true,

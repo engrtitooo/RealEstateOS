@@ -283,3 +283,69 @@ Output an edited version of THIS room with the new furniture and staging added.`
         return stagingFallbacks[Math.floor(Math.random() * stagingFallbacks.length)];
     }
 }
+
+/**
+ * Generate an image derived strictly from a reference floor plan
+ * Uses Gemini 2.0 Flash for plan-faithful generation
+ */
+export async function generateImageFromPlan(
+    planBase64: string,
+    mimeType: string,
+    prompt: string
+): Promise<string> {
+    try {
+        // Use Gemini 2.0 Flash experimental for plan-driven Image-to-Image generation
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-2.0-flash-exp',
+        });
+
+        const imagePart = createImagePart(planBase64, mimeType);
+
+        // Strict architectural prompt wrapper
+        const architecturalPrompt = `ARCHITECTURAL VISUALIZATION TASK (STRICT GEOMETRY ADHERENCE):
+
+INPUT: The attached floor plan image is the SINGLE SOURCE OF TRUTH.
+TASK: ${prompt}
+
+CONSTRAINTS:
+1. GEOMETRY LOCK: You MUST NOT invent rooms, move walls, or change proportions.
+2. The output must be a rendered view derived DIRECTLY from the provided plan geometry.
+3. No people, no lifestyle scenes.
+4. Professional Architectural Visualization style.
+5. High fidelity materials and lighting.
+
+Output the requested image.`;
+
+        const result = await model.generateContent({
+            contents: [
+                {
+                    role: 'user',
+                    parts: [imagePart, { text: architecturalPrompt }]
+                }
+            ],
+            generationConfig: {
+                // @ts-expect-error - multimodal generation support
+                responseModalities: ['image', 'text'],
+            },
+        });
+
+        const response = result.response;
+        const parts = response.candidates?.[0]?.content?.parts;
+
+        if (parts && parts.length > 0) {
+            for (const part of parts) {
+                if ('inlineData' in part && part.inlineData) {
+                    return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+                }
+            }
+        }
+
+        // Fallback to standard text-to-image if multimodal fails
+        console.warn('Plan-driven generation failed to produce image, falling back to text-to-image');
+        return generateImage(prompt);
+
+    } catch (error) {
+        console.error('Plan-driven generation error:', error);
+        return generateImage(prompt);
+    }
+}
