@@ -291,7 +291,8 @@ Output an edited version of THIS room with the new furniture and staging added.`
 export async function generateImageFromPlan(
     planBase64: string,
     mimeType: string,
-    prompt: string
+    prompt: string,
+    styleReferenceBase64?: string // Optional Style Reference Image
 ): Promise<string> {
     try {
         // Use Gemini 2.0 Flash experimental for plan-driven Image-to-Image generation
@@ -301,14 +302,35 @@ export async function generateImageFromPlan(
 
         const imagePart = createImagePart(planBase64, mimeType);
 
+        // Prepare parts array
+        const inputParts: Part[] = [imagePart];
+
+        // If Style Reference is provided, add it
+        let styleInstruction = "";
+        if (styleReferenceBase64) {
+            const stylePart = createImagePart(styleReferenceBase64, 'image/png'); // Assumption: PNG/JPEG
+            inputParts.push(stylePart);
+            styleInstruction = `
+VISUAL STYLE REFERENCE (IMAGE 2):
+The second image provided is the 3D Home Overview. It is the STYLE AUTHORITY.
+- You MUST match the flooring material, wall color, and lighting temperature seen in Image 2.
+- The output must look like it belongs in the same house.
+`;
+        }
+
         // Strict architectural prompt wrapper
         const architecturalPrompt = `ARCHITECTURAL VISUALIZATION TASK (STRICT GEOMETRY ADHERENCE):
 
-INPUT: The attached floor plan image is the SINGLE SOURCE OF TRUTH.
+INPUTS:
+Image 1: Floor Plan (GEOMETRY AUTHORITY)
+${styleReferenceBase64 ? "Image 2: 3D Overview (STYLE AUTHORITY)" : ""}
+
 TASK: ${prompt}
 
+${styleInstruction}
+
 CONSTRAINTS:
-1. GEOMETRY LOCK: You MUST NOT invent rooms, move walls, or change proportions.
+1. GEOMETRY LOCK: Use Image 1 boundaries strictly. You MUST NOT invent rooms, move walls, or change proportions.
 2. The output must be a rendered view derived DIRECTLY from the provided plan geometry.
 3. No people, no lifestyle scenes.
 4. Professional Architectural Visualization style.
@@ -320,7 +342,7 @@ Output the requested image.`;
             contents: [
                 {
                     role: 'user',
-                    parts: [imagePart, { text: architecturalPrompt }]
+                    parts: [...inputParts, { text: architecturalPrompt }]
                 }
             ],
             generationConfig: {

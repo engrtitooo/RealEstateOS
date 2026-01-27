@@ -134,16 +134,36 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
 
         if (body.floorPlanBase64) {
             // Plan-Driven Flow (Phase 2: Derive Each Room)
-            // Prepend critical instruction to use the visual plan
-            const planDrivenPrompt = `LOCATE the room labeled "${body.roomName}" in the provided floor plan.
+
+            let planDrivenPrompt = "";
+            let styleReferenceBase64 = body.overviewBase64;
+
+            if (styleReferenceBase64) {
+                // CASE B: GEOMETRY + STYLE REFERENCE (Ultimate Consistency)
+                planDrivenPrompt = `RULES (NON-NEGOTIABLE):
+
+1. Use Image 1 (Floor Plan) ONLY to determine the room geometry, boundaries, and layout. Do not invent or alter structural elements.
+2. Use Image 2 (3D Overview) ONLY to match style: flooring material/color/direction, wall color, trim/baseboards, lighting temperature, fixture finishes, cabinet style, furniture design language, and overall render look.
+3. The final room render must look like a camera shot taken inside the same home shown in Image 2 (same materials, same lighting mood, same design family).
+4. Professional staging only: correct furniture scale, functional circulation paths, no stock-photo lifestyle scenes, no people, no random props that conflict with the overview style.
+
+Output: one hyper-realistic interior render of the requested room (${body.roomName}), consistent with Image 2.
+
+Staging Context:
+${interiorPrompt}`;
+            } else {
+                // CASE A: GEOMETRY ONLY (Legacy/Fallback)
+                planDrivenPrompt = `LOCATE the room labeled "${body.roomName}" in the provided floor plan.
 RENDER a photorealistic interior view of THIS specific room, matching its geometry and window placement exactly.
             
 ${interiorPrompt}`;
+            }
 
             imageUrl = await generateImageFromPlan(
                 body.floorPlanBase64,
                 'image/png', // Default assumption
-                planDrivenPrompt
+                planDrivenPrompt,
+                styleReferenceBase64
             );
         } else {
             // Text-Only Fallback (Legacy)

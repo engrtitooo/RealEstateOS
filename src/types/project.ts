@@ -134,6 +134,7 @@ export interface GenerateRoomRequest {
     approxSize: 'small' | 'medium' | 'large';
     function: RoomFunction;
     floorPlanBase64?: string; // Optional for backward compatibility, but required for plan-driven flow
+    overviewBase64?: string; // Optional: The 3D Overview image to use as Style Authority
 }
 
 export interface GenerateRoomResponse {

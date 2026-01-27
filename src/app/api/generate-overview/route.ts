@@ -31,37 +31,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateO
         }
 
         // Create professional architectural 3D overview prompt
-        const enhancedPrompt = `RealEstateOS Architectural Visualization Engine - 3D ISOMETRIC HOME CUTAWAY
+        const enhancedPrompt = `You are an architectural visualization engine. Use the uploaded floor plan as the single source of truth for geometry and layout. Generate one coherent, professionally designed 3D home interior overview that reflects the full plan.
 
-CORE OBJECTIVE:
-Generate a unified, technically accurate 3D isometric cutaway of the ENTIRE home layout.
-This is a technical architectural illustration, NOT a lifestyle photograph.
+Style: high-end ${body.designSystem.overallStyle} architectural interior design.
+Flooring: ${body.designSystem.flooring}
+Palette: ${body.designSystem.wallColorPalette.join(', ')}
 
-FLOOR PLAN SOURCE OF TRUTH (Follow Layout EXACTLY):
-${body.overviewPrompt}
+Rendering requirements: photoreal archviz quality, realistic materials, correct scale, clean verticals, architectural wide-angle lens (18–24mm), ray-traced global illumination, ambient occlusion, texture-rich surfaces, realistic shadows, natural daylight + warm interior lighting balanced at ~3500–4000K, no people, no text, no watermark.
 
-DESIGN SYSTEM IMPLEMENTATION:
-- Flooring: ${body.designSystem.flooring}
-- Palette: ${body.designSystem.wallColorPalette.join(', ')}
-- Materials: ${body.designSystem.materialMood.join(', ')}
-- Style: ${body.designSystem.overallStyle}
+Non-negotiable: do not change the plan geometry. Do not add rooms or openings. Maintain consistent flooring and wall palette throughout the whole home.
 
-NON-NEGOTIABLE RENDERING RULES:
-1. View: 45-degree Isometric Cutaway. Walls cut at 4-foot height.
-2. Layout: ALL rooms must be shown in their correct relative positions (as described above).
-3. Scale: Furniture scale must be accurate and consistent across the entire floor.
-4. Consistency: Same flooring functionality and wall thickness throughout.
-5. Staging:
-   - Beds in bedrooms.
-   - Cabinetry in kitchens.
-   - Plumbing fixtures in bathrooms.
-   - Sofas/seating in living areas.
-   - NO people. NO pets. NO hands.
-6. Lighting: Uniform "studio" top-down lighting to illuminate all rooms equally.
-7. Style: High-fidelity architectural rendering. Clean lines. Realistic materials.
-
-OUTPUT:
-One high-resolution 3D isometric cutaway of the full home interior.`;
+Layout Context from Plan:
+${body.overviewPrompt}`;
 
         // Generate the overview image using Gemini 2.0 Flash (Plan-Driven) or Imagen (Text-Only fallback)
         let imageUrl: string;

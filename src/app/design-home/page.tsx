@@ -111,11 +111,17 @@ export default function DesignHomePage() {
             });
 
             const overviewData = await overviewResponse.json();
+            let overviewBase64ForRooms = undefined;
+
             if (overviewData.success && overviewData.imageUrl) {
                 setOverview3d(overviewData.imageUrl);
+                // Extract base64 date for style transfer (strip "data:image/xyz;base64," prefix)
+                if (overviewData.imageUrl.startsWith('data:')) {
+                    overviewBase64ForRooms = overviewData.imageUrl.split(',')[1];
+                }
             }
 
-            // Step 3: Generate room images one by one (Now Plan-Driven)
+            // Step 3: Generate room images one by one (Now Plan-Driven + Style-Matched)
             const rooms: GeneratedRoom[] = [];
             for (let i = 0; i < analyzeData.data.rooms.length; i++) {
                 setCurrentRoomIndex(i);
@@ -130,6 +136,7 @@ export default function DesignHomePage() {
                         approxSize: room.approxSize,
                         function: room.function,
                         floorPlanBase64: base64Data, // Pass the plan!
+                        overviewBase64: overviewBase64ForRooms, // Pass the Style Authority!
                     }),
                 });
 
