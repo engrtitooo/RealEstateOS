@@ -31,34 +31,37 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateO
         }
 
         // Create professional architectural 3D overview prompt
-        const enhancedPrompt = `ARCHITECTURAL VISUALIZATION - 3D ISOMETRIC HOME INTERIOR CUTAWAY
+        const enhancedPrompt = `RealEstateOS Architectural Visualization Engine - 3D ISOMETRIC HOME CUTAWAY
 
-SCENE TYPE: Professional architectural illustration showing the COMPLETE home interior from above at a 45-degree isometric angle. This is a technical architectural cutaway render, NOT a photograph.
+CORE OBJECTIVE:
+Generate a unified, technically accurate 3D isometric cutaway of the ENTIRE home layout.
+This is a technical architectural illustration, NOT a lifestyle photograph.
 
-FLOOR PLAN DESCRIPTION (follow exactly):
+FLOOR PLAN SOURCE OF TRUTH (Follow Layout EXACTLY):
 ${body.overviewPrompt}
 
-DESIGN SPECIFICATIONS:
-- Flooring throughout: ${body.designSystem.flooring}
-- Color Palette: ${body.designSystem.wallColorPalette.join(', ')}
-- Material Finishes: ${body.designSystem.materialMood.join(', ')}
+DESIGN SYSTEM IMPLEMENTATION:
+- Flooring: ${body.designSystem.flooring}
+- Palette: ${body.designSystem.wallColorPalette.join(', ')}
+- Materials: ${body.designSystem.materialMood.join(', ')}
 - Style: ${body.designSystem.overallStyle}
 
-CRITICAL RENDERING REQUIREMENTS:
-1. Show ALL rooms from the floor plan as a unified 3D cutaway
-2. Walls cut at approximately 4 feet height to reveal interior
-3. Each room must be correctly staged for its function (bedroom has bed, kitchen has cabinets, etc.)
-4. Maintain consistent wall thickness, ceiling height, and architectural language
-5. Flooring transitions between rooms should be logical and visible
-6. NO people, NO lifestyle elements, architecture only
-7. Clean isometric perspective with consistent 45-degree viewing angle
-8. Soft ambient lighting from above, simulating natural daylight
-9. Each room spatially connected as shown in the floor plan
-10. Professional magazine-quality architectural illustration style
-11. Show furniture to proper scale relative to room sizes
-12. Clear circulation paths between rooms
+NON-NEGOTIABLE RENDERING RULES:
+1. View: 45-degree Isometric Cutaway. Walls cut at 4-foot height.
+2. Layout: ALL rooms must be shown in their correct relative positions (as described above).
+3. Scale: Furniture scale must be accurate and consistent across the entire floor.
+4. Consistency: Same flooring functionality and wall thickness throughout.
+5. Staging:
+   - Beds in bedrooms.
+   - Cabinetry in kitchens.
+   - Plumbing fixtures in bathrooms.
+   - Sofas/seating in living areas.
+   - NO people. NO pets. NO hands.
+6. Lighting: Uniform "studio" top-down lighting to illuminate all rooms equally.
+7. Style: High-fidelity architectural rendering. Clean lines. Realistic materials.
 
-OUTPUT: High-quality 3D isometric architectural cutaway illustration of the complete home interior.`;
+OUTPUT:
+One high-resolution 3D isometric cutaway of the full home interior.`;
 
         // Generate the overview image using Imagen
         const imageUrl = await generateImage(enhancedPrompt);

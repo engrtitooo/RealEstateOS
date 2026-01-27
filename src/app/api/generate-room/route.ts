@@ -22,43 +22,41 @@ async function createInteriorPrompt(
     const model = getTextModel();
 
     const designSystemText = `
-Design System (MUST follow exactly):
+Design System Specification (STRICT ADHERENCE):
 - Flooring: ${designSystem.flooring}
 - Wall Colors: ${designSystem.wallColorPalette.join(', ')}
-- Lighting: ${designSystem.lightingTemperature} temperature, ${designSystem.lightingStyle}
+- Lighting: ${designSystem.lightingTemperature}, ${designSystem.lightingStyle}
 - Furniture Style: ${designSystem.furnitureAesthetic}
-- Materials: ${designSystem.materialMood.join(', ')}
-- Overall Style: ${designSystem.overallStyle}
+- Material Finishes: ${designSystem.materialMood.join(', ')}
+- Architecture Style: ${designSystem.overallStyle}
 `.trim();
 
-    const prompt = `You are a senior architectural visualization specialist creating prompts for professional real estate marketing renders.
+    const prompt = `You are RealEstateOS Architectural Visualization Engine.
+Your task is to generate a technical image prompt for a single room render.
 
-Generate a detailed image prompt for a ${roomName} that is a ${approxSize}-sized ${roomFunction} space.
+Target Room: ${roomName} (${approxSize} size, function: ${roomFunction})
 
 ${designSystemText}
 
-CRITICAL REQUIREMENTS FOR THE IMAGE PROMPT:
-1. This is ARCHITECTURAL VISUALIZATION, not lifestyle photography
-2. NO people, NO hands, NO lifestyle scenes
-3. Wide-angle architectural lens perspective (equivalent to 16-24mm)
-4. Eye-level camera height (approximately 4-5 feet)
-5. Vertical lines must be straight (no lens distortion)
-6. Professional real estate photography lighting
-7. Furniture must be CORRECT for room function:
-   - Bedroom = bed, nightstands, dresser, NOT kitchen items
-   - Kitchen = cabinets, counters, appliances, NOT living room furniture
-   - Bathroom = vanity, toilet, shower/tub, NOT bedroom furniture
-   - Living Room = sofa, coffee table, entertainment, NOT cooking equipment
-8. Furniture SCALE must match ${approxSize} room size
-9. Clear circulation paths - no cluttered or cramped layouts
-10. Materials must look buildable: real wood grain, stone veining, fabric texture
-11. Magazine-quality architectural photography
-12. Empty room staged professionally - no occupants
+NON-NEGOTIABLE RENDER SETTINGS:
+1. Camera: Professional Architectural 24mm lens. Eye-level (5 feet). 2-point perspective. Vertical lines MUST be perfectly straight.
+2. Lighting: Natural sunlight from windows + architectural fixture lighting. No exaggerated "bloom".
+3. Staging: Professional real estate staging only.
+   - Correct scale for ${approxSize} room.
+   - Furniture MUST match function: ${roomFunction}.
+   - Clear circulation paths.
+4. Reality Check:
+   - NO people. NO pets. NO hands.
+   - NO lifestyle clutter (no open books, no half-eaten food).
+   - Materials must look physically buildable (real wood grain, correct reflection).
 
-Room-specific requirements for ${roomFunction}:
+Room-Specific Staging Rules for ${roomFunction}:
 ${getRoomSpecificRequirements(roomFunction)}
 
-Output ONLY the image generation prompt. 2-3 detailed sentences describing the architectural interior render. NO explanatory text.`;
+OUTPUT:
+Generate ONE detailed image prompt (3-4 sentences) describing this specific room architecture and staging.
+Focus on geometry, lighting, materials, and furniture.
+NO introductory text. NO "Here is the prompt".`;
 
     const result = await model.generateContent(prompt);
     return result.response.text().trim();

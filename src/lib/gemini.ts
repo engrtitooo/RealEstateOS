@@ -28,10 +28,10 @@ export const MODELS = {
  */
 export function getVisionModel() {
     return genAI.getGenerativeModel({
-        model: MODELS.GEMINI_PRO,
+        model: MODELS.GEMINI_PRO, // gemini-3-pro-preview
         generationConfig: {
-            temperature: 0.4,
-            topP: 0.95,
+            temperature: 0.1, // Low temperature is mandatory for geometry lock
+            topP: 0.9,
             topK: 40,
             maxOutputTokens: 8192,
         },
@@ -45,7 +45,7 @@ export function getTextModel() {
     return genAI.getGenerativeModel({
         model: MODELS.GEMINI_PRO,
         generationConfig: {
-            temperature: 0.7,
+            temperature: 0.1, // Constrain creativity
             topP: 0.9,
             topK: 40,
             maxOutputTokens: 4096,
