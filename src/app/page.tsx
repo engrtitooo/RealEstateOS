@@ -5,13 +5,34 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
     const [mounted, setMounted] = useState(false);
+    const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
+    const handleSignInClick = () => {
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+    };
+
     return (
         <main className="min-h-screen animated-gradient">
+            {/* Coming Soon Toast */}
+            <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+                <div className="glass-card px-6 py-4 rounded-2xl flex items-center gap-3 shadow-2xl border border-primary-500/30">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="font-semibold text-white">Coming Soon!</p>
+                        <p className="text-sm text-gray-400">User accounts launching soon. Enjoy the full demo!</p>
+                    </div>
+                </div>
+            </div>
+
             {/* Navigation */}
             <nav className="fixed top-0 left-0 right-0 z-50 glass-dark">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -26,7 +47,7 @@ export default function Home() {
                     <div className="hidden md:flex items-center gap-8">
                         <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
                         <a href="#how-it-works" className="text-gray-300 hover:text-white transition-colors">How It Works</a>
-                        <button className="btn-secondary text-sm py-2 px-4">Sign In</button>
+                        <button onClick={handleSignInClick} className="btn-secondary text-sm py-2 px-4">Sign In</button>
                     </div>
                 </div>
             </nav>
