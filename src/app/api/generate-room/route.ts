@@ -121,13 +121,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
             );
         }
 
-        // Generate the interior design prompt using Gemini
-        let interiorPrompt = await createInteriorPrompt(
-            body.roomName,
-            body.designSystem,
-            body.approxSize,
-            body.function
-        );
+        // Generate the interior design prompt AND Audit the layout in Parallel to save time
+        const cleanOverview = body.overviewBase64 ? body.overviewBase64.replace(/^data:image\/\w+;base64,/, '') : '';
+
+        const [interiorPrompt, layoutSpec] = await Promise.all([
+            createInteriorPrompt(
+                body.roomName,
+                body.designSystem,
+                body.approxSize,
+                body.function
+            ),
+            body.floorPlanBase64 && cleanOverview // Only audit if we have the inputs
+                ? extractFurnitureSpec(cleanOverview, body.roomName)
+                : Promise.resolve("Standard furniture layout.")
+        ]);
 
         // Generate the image using Gemini 2.0 Flash (Plan-Driven) or Imagen (Text-Only fallback)
         let imageUrl: string;
@@ -141,9 +148,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
             if (styleReferenceBase64) {
                 // CASE B: GEOMETRY + STYLE REFERENCE + LAYOUT AUDIT (Ultimate Fidelity)
 
-                // 1. Audit the Overview to get exact stats
-                const cleanOverview = styleReferenceBase64.replace(/^data:image\/\w+;base64,/, '');
-                const layoutSpec = await extractFurnitureSpec(cleanOverview, body.roomName);
+                // Layout Spec already fetched in parallel above
 
                 planDrivenPrompt = `Role:
 You are a High-Fidelity Rendering Engine. 
