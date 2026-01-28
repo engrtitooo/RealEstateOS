@@ -1,7 +1,7 @@
 /**
  * Gemini AI Client Utilities
  * Centralized Gemini configuration and helper functions
- * Uses Gemini 2.0 Flash for text/vision and Imagen 3 for image generation
+ * STRICT MODE: Uses gemini-3-pro-image-preview exclusively for high-fidelity generation
  */
 
 import { GoogleGenerativeAI, Part } from '@google/generative-ai';
@@ -15,20 +15,20 @@ if (!apiKey) {
 
 export const genAI = new GoogleGenerativeAI(apiKey || '');
 
-// Model configurations - Hackathon approved models
-export const MODELS = {
-    // Gemini 3.0 Pro for vision and reasoning
-    GEMINI_PRO: 'gemini-3-pro-preview',
-    // Imagen 3 for image generation
-    IMAGEN_3: 'imagen-3.0-generate-002',
-} as const;
+// Single Truth Model ID
+const MODEL_ID = 'gemini-3-pro-image-preview';
+
+// Strict System Instruction for Geometric Fidelity
+const SYSTEM_INSTRUCTION = `Role: Architectural Visualization Specialist. Your highest priority is Structural Integrity. You MUST NOT alter, move, or resize structural elements (walls, windows, doors). You must only finish/furnish the empty space within the existing boundaries. Perspective matching is mandatory.`;
 
 /**
  * Get the Gemini Vision model for architectural analysis
  */
 export function getVisionModel() {
+    console.log('[RealEstateOS] Initializing Vision Model:', MODEL_ID);
     return genAI.getGenerativeModel({
-        model: MODELS.GEMINI_PRO, // gemini-3-pro-preview
+        model: MODEL_ID,
+        systemInstruction: SYSTEM_INSTRUCTION,
         generationConfig: {
             temperature: 0.1, // Low temperature is mandatory for geometry lock
             topP: 0.9,
@@ -42,8 +42,10 @@ export function getVisionModel() {
  * Get the Gemini model for text generation (descriptions, captions)
  */
 export function getTextModel() {
+    console.log('[RealEstateOS] Initializing Text Model:', MODEL_ID);
     return genAI.getGenerativeModel({
-        model: MODELS.GEMINI_PRO,
+        model: MODEL_ID,
+        systemInstruction: SYSTEM_INSTRUCTION,
         generationConfig: {
             temperature: 0.1, // Constrain creativity
             topP: 0.9,
@@ -95,83 +97,26 @@ export function parseJsonResponse<T>(text: string): T {
 }
 
 /**
- * Generate an image using Imagen 3
- * Uses the Gemini API with Imagen 3 model for high-quality image generation
- * Falls back to room-type-specific architectural images
+ * Generate an image using strict architectural model
+ * Replaces legacy Imagen 3 fallback with high-fidelity Gemini generation
  */
 export async function generateImage(prompt: string): Promise<string> {
-    // Room-type-specific architectural fallback images (NO people, professional real estate photography)
-    const fallbackImagesByType: Record<string, string[]> = {
-        bedroom: [
-            'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&q=80', // Modern bedroom
-            'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80', // Luxury bedroom
-            'https://images.unsplash.com/photo-1560185007-cde436f6a4d0?w=800&q=80', // Scandinavian bedroom
-        ],
-        kitchen: [
-            'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80', // Modern kitchen
-            'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80', // White kitchen
-            'https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&q=80', // Contemporary kitchen
-        ],
-        living: [
-            'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80', // Modern living room
-            'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80', // Contemporary living
-            'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80', // Minimalist living
-        ],
-        bathroom: [
-            'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&q=80', // Modern bathroom
-            'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&q=80', // Luxury bathroom
-            'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80', // Clean bathroom
-        ],
-        dining: [
-            'https://images.unsplash.com/photo-1617806118233-18e1de247200?w=800&q=80', // Modern dining
-            'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&q=80', // Contemporary dining
-        ],
-        outdoor: [
-            'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80', // Patio
-            'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80', // Terrace
-        ],
-        overview: [
-            'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80', // Open floor plan
-            'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&q=80', // Modern interior
-        ],
-        default: [
-            'https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?w=800&q=80', // General interior
-            'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800&q=80', // Clean interior
-        ],
-    };
-
-    // Detect room type from prompt
-    function detectRoomType(promptText: string): string {
-        const lower = promptText.toLowerCase();
-        if (lower.includes('bedroom') || lower.includes('sleeping') || lower.includes('master')) return 'bedroom';
-        if (lower.includes('kitchen') || lower.includes('cooking')) return 'kitchen';
-        if (lower.includes('living') || lower.includes('lounge') || lower.includes('family room')) return 'living';
-        if (lower.includes('bath') || lower.includes('toilet') || lower.includes('ensuite') || lower.includes('shower')) return 'bathroom';
-        if (lower.includes('dining')) return 'dining';
-        if (lower.includes('patio') || lower.includes('outdoor') || lower.includes('deck') || lower.includes('terrace')) return 'outdoor';
-        if (lower.includes('isometric') || lower.includes('overview') || lower.includes('cutaway') || lower.includes('floor plan')) return 'overview';
-        return 'default';
-    }
-
-    const roomType = detectRoomType(prompt);
-    const roomFallbacks = fallbackImagesByType[roomType] || fallbackImagesByType.default;
-
+    console.log('[RealEstateOS] Generating text-to-image using model:', MODEL_ID);
     try {
-        // Use Imagen 3 for image generation
         const model = genAI.getGenerativeModel({
-            model: MODELS.IMAGEN_3,
-        });
-
-        // Enhanced prompt for better results
-        const enhancedPrompt = `Professional interior design photograph: ${prompt}. 
-Magazine-quality, photorealistic, natural lighting, high resolution.`;
-
-        const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: enhancedPrompt }] }],
+            model: MODEL_ID,
+            systemInstruction: SYSTEM_INSTRUCTION,
             generationConfig: {
-                // @ts-expect-error - Imagen 3 specific config
+                temperature: 0.1,
+                // @ts-expect-error - generation model config
                 responseModalities: ['image'],
             },
+        });
+
+        const enhancedPrompt = `ARCHITECTURAL RENDER: ${prompt}`;
+
+        const result = await model.generateContent({
+            contents: [{ role: 'user', parts: [{ text: enhancedPrompt }] }]
         });
 
         const response = result.response;
@@ -185,12 +130,12 @@ Magazine-quality, photorealistic, natural lighting, high resolution.`;
             }
         }
 
-        // Fallback if no image generated
-        console.log('Imagen 3 did not return image, using fallback');
-        return roomFallbacks[Math.floor(Math.random() * roomFallbacks.length)];
+        throw new Error('No image generated');
+
     } catch (error) {
-        console.error('Imagen 3 generation error, using fallback:', error);
-        return roomFallbacks[Math.floor(Math.random() * roomFallbacks.length)];
+        console.error('Generation error:', error);
+        // Minimal fallback placeholder if absolutely necessary, but we try to avoid it
+        return 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80';
     }
 }
 
@@ -202,6 +147,7 @@ export async function analyzeImage(
     mimeType: string,
     prompt: string
 ): Promise<string> {
+    console.log('[RealEstateOS] Analyzing plan using model:', MODEL_ID);
     const model = getVisionModel();
 
     const imagePart = createImagePart(imageBase64, mimeType);
@@ -213,55 +159,42 @@ export async function analyzeImage(
 }
 
 /**
- * Edit an image using Gemini 2.0 Flash with image generation
- * Takes the original image and applies edits based on the prompt
- * Returns the edited image as a base64 data URL
+ * Edit an image - Not strictly used in main flow but kept for utility compatibility
+ * Updated to use the new model
  */
 export async function editImage(
     imageBase64: string,
     mimeType: string,
     editPrompt: string
 ): Promise<string> {
+    console.log('[RealEstateOS] Editing image using model:', MODEL_ID);
     // Room-type-specific fallback images for staging
     const stagingFallbacks = [
         'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80',
-        'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&q=80',
-        'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80',
-        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
+        // ... simplified fallbacks
     ];
 
     try {
-        // Use Gemini 2.0 Flash experimental for image editing
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash-exp',
+            model: MODEL_ID,
+            systemInstruction: SYSTEM_INSTRUCTION,
+            generationConfig: {
+                temperature: 0.1,
+                // @ts-expect-error - generation model config
+                responseModalities: ['image', 'text'],
+            },
         });
 
         // Create the image part from the original image
         const imagePart = createImagePart(imageBase64, mimeType);
 
-        // Create the edit request with explicit instructions to modify the existing image
-        const fullPrompt = `IMPORTANT: Edit this SPECIFIC image that I'm providing. Do NOT create a new room.
-
-Look at the room in the provided image and ADD furniture and staging to it while keeping:
-- The EXACT same room shape, walls, windows, and architecture
-- The EXACT same camera angle and perspective
-- The EXACT same lighting conditions
-
-${editPrompt}
-
-Output an edited version of THIS room with the new furniture and staging added.`;
-
         const result = await model.generateContent({
             contents: [
                 {
                     role: 'user',
-                    parts: [imagePart, { text: fullPrompt }],
+                    parts: [imagePart, { text: editPrompt }],
                 },
             ],
-            generationConfig: {
-                // @ts-expect-error - Gemini 2.0 Flash experimental image generation
-                responseModalities: ['image', 'text'],
-            },
         });
 
         const response = result.response;
@@ -274,19 +207,15 @@ Output an edited version of THIS room with the new furniture and staging added.`
                 }
             }
         }
-
-        // Fallback if no image in response
-        console.log('Gemini did not return edited image, using fallback');
-        return stagingFallbacks[Math.floor(Math.random() * stagingFallbacks.length)];
+        return stagingFallbacks[0];
     } catch (error) {
         console.error('Image editing error, using fallback:', error);
-        return stagingFallbacks[Math.floor(Math.random() * stagingFallbacks.length)];
+        return stagingFallbacks[0];
     }
 }
 
 /**
  * Generate an image derived strictly from a reference floor plan
- * Uses Gemini 2.0 Flash for plan-faithful generation
  */
 export async function generateImageFromPlan(
     planBase64: string,
@@ -294,15 +223,17 @@ export async function generateImageFromPlan(
     prompt: string,
     styleReferenceBase64?: string // Optional Style Reference Image
 ): Promise<string> {
+    console.log('[RealEstateOS] Generating from Plan using model:', MODEL_ID);
     try {
-        // Use Gemini 2.0 Flash experimental for plan-driven Image-to-Image generation
-        // CRITICAL: Low temperature for geometry lock
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash-exp',
+            model: MODEL_ID,
+            systemInstruction: SYSTEM_INSTRUCTION,
             generationConfig: {
                 temperature: 0.1, // STRICT: Low temperature for accurate, non-creative output
                 topP: 0.9,
                 topK: 40,
+                // @ts-expect-error - generation model config
+                responseModalities: ['image', 'text'],
             },
         });
 
@@ -312,24 +243,10 @@ export async function generateImageFromPlan(
         const inputParts: Part[] = [imagePart];
 
         // If Style Reference is provided, add it
-        let styleInstruction = "";
         if (styleReferenceBase64) {
+            console.log('[RealEstateOS] Style reference image provided. Attaching to request.');
             const stylePart = createImagePart(styleReferenceBase64, 'image/png'); // Assumption: PNG/JPEG
             inputParts.push(stylePart);
-            styleInstruction = `
-VISUAL STYLE REFERENCE (IMAGE 2 - MANDATORY MATCH):
-The second image is the 3D Home Overview. It is the ABSOLUTE STYLE AUTHORITY.
-
-YOU MUST EXACTLY REPLICATE:
-- The exact flooring material, color, and grain direction from Image 2.
-- The exact wall paint color and finish from Image 2.
-- The exact lighting temperature (warm/cool) from Image 2.
-- The exact trim/baseboard style from Image 2.
-- The furniture design language (modern, classic, etc.) from Image 2.
-
-The output MUST look like it was rendered from the same 3D model as Image 2.
-If Image 2 shows oak hardwood with warm 3500K lighting, your output MUST show identical oak hardwood with identical 3500K lighting.
-`;
         }
 
         // Minimal wrapper to define inputs, trusting the caller's strict contract for the rest
@@ -347,13 +264,6 @@ ${prompt}`;
                     parts: [...inputParts, { text: architecturalPrompt }]
                 }
             ],
-            generationConfig: {
-                temperature: 0.0, // MAXIMUM DETERMINISM
-                topP: 1.0,        // Do not cut off tokens
-                topK: 1,          // Only pick the most likely token
-                // @ts-expect-error - multimodal generation support
-                responseModalities: ['image', 'text'],
-            },
         });
 
         const response = result.response;
@@ -368,7 +278,7 @@ ${prompt}`;
         }
 
         // Fallback to standard text-to-image if multimodal fails
-        console.warn('Plan-driven generation failed to produce image, falling back to text-to-image');
+        console.warn('Plan-driven generation failed to produce image, falling back to simple generation');
         return generateImage(prompt);
 
     } catch (error) {
