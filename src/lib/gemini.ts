@@ -262,6 +262,47 @@ Do NOT hallucinate windows or furniture not present.`;
     }
 }
 
+
+
+/**
+ * Audit an Empty Room Photo for Virtual Staging
+ * Extracts Camera Angle, Lighting, and Geometry constraints
+ */
+export async function auditEmptyRoom(
+    photoBase64: string
+): Promise<string> {
+    console.log('[RealEstateOS] Auditing Empty Room Geometry');
+    try {
+        const model = getVisionModel();
+        const imagePart = createImagePart(photoBase64, 'image/png');
+
+        const prompt = `GEOMETRY SCAN:
+Look at this room photo. I need to furnish it.
+Analyze the ARCHITECTURAL SKELETON to ensure I don't break the perspective.
+
+REPORT:
+1. Camera Angle (e.g., "Eye-level, 1-point perspective, looking straight at back wall").
+2. Flooring (e.g., "Light Oak Hardwood, planks running vertical").
+3. Windows (e.g., "Two large windows on left wall, sunny daylight").
+4. Ceiling (e.g., "Flat white, approx 9ft").
+5. Lighting Direction (e.g., "Light coming from left").
+
+OUTPUT FORMAT:
+- Camera: [Description]
+- Lighting: [Description]
+- Existing Materials: [Floor] / [Walls]
+- Structural Constraints: [Windows/Doors locations]
+
+Be extremely precise.`;
+
+        const result = await model.generateContent([prompt, imagePart]);
+        return result.response.text();
+    } catch (error) {
+        console.error('Empty Room Audit Error:', error);
+        return "Standard room geometry.";
+    }
+}
+
 /**
  * Generate an image derived strictly from a reference floor plan
  */
