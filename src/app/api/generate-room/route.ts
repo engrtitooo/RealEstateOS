@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getTextModel, generateImage, generateImageFromPlan } from '@/lib/gemini';
+import { getTextModel, generateImage, generateImageFromPlan, extractFurnitureSpec } from '@/lib/gemini';
 import type {
     GenerateRoomRequest,
     GenerateRoomResponse,
@@ -139,32 +139,36 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
             let styleReferenceBase64 = body.overviewBase64;
 
             if (styleReferenceBase64) {
-                // CASE B: GEOMETRY + STYLE REFERENCE (Texture Projection Mode)
+                // CASE B: GEOMETRY + STYLE REFERENCE + LAYOUT AUDIT (Ultimate Fidelity)
+
+                // 1. Audit the Overview to get exact stats
+                const cleanOverview = styleReferenceBase64.replace(/^data:image\/\w+;base64,/, '');
+                const layoutSpec = await extractFurnitureSpec(cleanOverview, body.roomName);
+
                 planDrivenPrompt = `Role:
 You are a High-Fidelity Rendering Engine. 
 
 Objective:
-Create a "Staged Room Perspective" by mentally projecting the textures from the Master Model (Image 2) onto the Geometry of the Plan (Image 1).
+Create a "Staged Room Perspective" that matches the 3D Master Model EXACTLY (Geometry + Style + Layout).
 
 INPUTS:
 Image 1: Geometry Map (Floor Plan)
 Image 2: Texture Atlas (3D Master Model)
+Text Spec: Verified Layout Specification (from Image 2 Audit)
 
 INSTRUCTIONS:
 1. GEOMETRY: Build the room exactly as shown in Image 1.
-2. TEXTURE PROJECTION (CRITICAL):
-   - Look at the flooring in Image 2. Project that EXACT material onto the floor of this room.
-   - Look at the walls in Image 2. Project that EXACT paint/finish onto the walls of this room.
-3. FURNITURE CONSISTENCY (MANDATORY):
-   - Look at the furniture blobs in Image 2 (top-down view).
-   - INTERPOLATE the exact "Design DNA" of that furniture. 
-   - If Image 2 shows a "Modern Beige Sofa", you must render a "High-Fidelity Modern Beige Sofa".
-   - Do NOT change the style. If Image 2 is Minimalist, this room MUST be Minimalist.
-4. LIGHTING MATCH:
-   - Identify the lighting condition in Image 2 (e.g., "Warm Sunset" or "Cool Daylight").
-   - Replicate that EXACT lighting condition in this room.
+2. TEXTURE PROJECTION: Match Image 2's flooring, wall color, and lighting exactly.
+3. LAYOUT ENFORCEMENT (CRITICAL):
+   - You MUST follow the "Verified Layout Specification" below.
+   - If it lists "1 Queen Bed", you render 1 Queen Bed.
+   - If it lists "2 Nightstands", you render 2 Nightstands.
+   - Orientation MUST match Image 2 logic.
 
-TASK: Render a photo-real perspective inside "${body.roomName}".
+VERIFIED LAYOUT SPECIFICATION:
+${layoutSpec}
+
+TASK: Render a photo-real perspective inside "${body.roomName}" conforming 100% to the Spec above.
 
 STAGING SPECIFICATION:
 ${interiorPrompt}`;

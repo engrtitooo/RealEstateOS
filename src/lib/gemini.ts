@@ -215,6 +215,48 @@ export async function editImage(
 }
 
 /**
+ * Audit the 3D Overview Image to extract strict furniture/layout specs
+ * Returns a JSON-formatted string describing the exact furniture in the target room
+ */
+export async function extractFurnitureSpec(
+    overviewBase64: string,
+    roomName: string
+): Promise<string> {
+    console.log('[RealEstateOS] Extracting Layout Spec for:', roomName);
+    try {
+        const model = getVisionModel();
+        const imagePart = createImagePart(overviewBase64, 'image/png');
+
+        const auditPrompt = `AUDIT TASK:
+Look at this 3D Home Overview.
+Focus ONLY on the room labeled or identifying as "${roomName}".
+
+Your job is to write a STRICT LAYOUT SPECIFICATION for this room.
+1. List every piece of furniture visible in this room.
+2. Note the count (how many?).
+3. Note the exact orientation (facing window? facing door?).
+4. Note the color and material of each piece.
+5. Note the flooring and wall color used in this room.
+
+Output format:
+- Flooring: [Material/Color]
+- Walls: [Color]
+- Furniture List:
+  1. [Item] ([Color/Material]) - [Position/Orientation]
+  2. [Item] ...
+
+If the room is empty, say "Room is empty".
+Do NOT hallucinate furniture not present in the image.`;
+
+        const result = await model.generateContent([auditPrompt, imagePart]);
+        return result.response.text();
+    } catch (error) {
+        console.error('Layout Spec Extraction Error:', error);
+        return "Standard furniture layout matching the room function.";
+    }
+}
+
+/**
  * Generate an image derived strictly from a reference floor plan
  */
 export async function generateImageFromPlan(
