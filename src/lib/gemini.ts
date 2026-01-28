@@ -229,9 +229,9 @@ export async function generateImageFromPlan(
             model: MODEL_ID,
             systemInstruction: SYSTEM_INSTRUCTION,
             generationConfig: {
-                temperature: 0.1, // STRICT: Low temperature for accurate, non-creative output
-                topP: 0.9,
-                topK: 40,
+                temperature: 0.0, // STRICT: Maximum determinism for furniture consistency
+                topP: 1.0,        // Do not cut off tokens
+                topK: 1,          // Only pick the most likely token
                 // @ts-expect-error - generation model config
                 responseModalities: ['image', 'text'],
             },

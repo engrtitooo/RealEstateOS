@@ -155,13 +155,14 @@ INSTRUCTIONS:
 2. TEXTURE PROJECTION (CRITICAL):
    - Look at the flooring in Image 2. Project that EXACT material onto the floor of this room.
    - Look at the walls in Image 2. Project that EXACT paint/finish onto the walls of this room.
-   - Look at the furniture in Image 2. If you see a bed/sofa in this room in Image 2, render that EXACT same object from a close-up angle.
-3. LIGHTING MATCH:
+3. FURNITURE CONSISTENCY (MANDATORY):
+   - Look at the furniture blobs in Image 2 (top-down view).
+   - INTERPOLATE the exact "Design DNA" of that furniture. 
+   - If Image 2 shows a "Modern Beige Sofa", you must render a "High-Fidelity Modern Beige Sofa".
+   - Do NOT change the style. If Image 2 is Minimalist, this room MUST be Minimalist.
+4. LIGHTING MATCH:
    - Identify the lighting condition in Image 2 (e.g., "Warm Sunset" or "Cool Daylight").
    - Replicate that EXACT lighting condition in this room.
-4. DETAIL CONSISTENCY:
-   - Do not change one pixel of the design language.
-   - If Image 2 has white baseboards, this room MUST have white baseboards.
 
 TASK: Render a photo-real perspective inside "${body.roomName}".
 
