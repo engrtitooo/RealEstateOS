@@ -7,13 +7,22 @@
 import { GoogleGenerativeAI, Part } from '@google/generative-ai';
 
 // Initialize the Gemini client
-const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+// Lazy Initialize the Gemini client to prevent build-time crashes
+let genAIInstance: GoogleGenerativeAI | null = null;
 
-if (!apiKey) {
-    console.warn('Warning: GOOGLE_API_KEY or GEMINI_API_KEY not found in environment variables');
+function getGenAI() {
+    if (!genAIInstance) {
+        const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+        // During build time, env vars might be missing. We allow this, but runtime will fail.
+        if (!apiKey) {
+            // If running in browser/edge where process.env might be polyfilled differently
+            // or simply missing during build, we return a dummy or throw at runtime usage.
+            console.warn('Warning: GOOGLE_API_KEY not found. Calls will fail.');
+        }
+        genAIInstance = new GoogleGenerativeAI(apiKey || 'BUILD_PLACEHOLDER');
+    }
+    return genAIInstance;
 }
-
-export const genAI = new GoogleGenerativeAI(apiKey || '');
 
 // Single Truth Model ID
 const MODEL_ID = 'gemini-3-pro-image-preview';
@@ -26,7 +35,7 @@ const SYSTEM_INSTRUCTION = `Role: Architectural Visualization Specialist. Your h
  */
 export function getVisionModel() {
     console.log('[RealEstateOS] Initializing Vision Model:', MODEL_ID);
-    return genAI.getGenerativeModel({
+    return getGenAI().getGenerativeModel({
         model: MODEL_ID,
         systemInstruction: SYSTEM_INSTRUCTION,
         generationConfig: {
@@ -43,7 +52,7 @@ export function getVisionModel() {
  */
 export function getTextModel() {
     console.log('[RealEstateOS] Initializing Text Model:', MODEL_ID);
-    return genAI.getGenerativeModel({
+    return getGenAI().getGenerativeModel({
         model: MODEL_ID,
         systemInstruction: SYSTEM_INSTRUCTION,
         generationConfig: {
@@ -103,7 +112,7 @@ export function parseJsonResponse<T>(text: string): T {
 export async function generateImage(prompt: string): Promise<string> {
     console.log('[RealEstateOS] Generating text-to-image using model:', MODEL_ID);
     try {
-        const model = genAI.getGenerativeModel({
+        const model = getGenAI().getGenerativeModel({
             model: MODEL_ID,
             systemInstruction: SYSTEM_INSTRUCTION,
             generationConfig: {
@@ -175,7 +184,7 @@ export async function editImage(
     ];
 
     try {
-        const model = genAI.getGenerativeModel({
+        const model = getGenAI().getGenerativeModel({
             model: MODEL_ID,
             systemInstruction: SYSTEM_INSTRUCTION,
             generationConfig: {
@@ -314,7 +323,7 @@ export async function generateImageFromPlan(
 ): Promise<string> {
     console.log('[RealEstateOS] Generating from Plan using model:', MODEL_ID);
     try {
-        const model = genAI.getGenerativeModel({
+        const model = getGenAI().getGenerativeModel({
             model: MODEL_ID,
             systemInstruction: SYSTEM_INSTRUCTION,
             generationConfig: {
