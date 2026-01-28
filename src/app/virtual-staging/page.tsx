@@ -6,7 +6,7 @@ import { DesignSystem } from '@/types/project';
 
 // Default Modern Design System
 const defaultDesign: DesignSystem = {
-    overallStyle: 'Modern',
+    overallStyle: 'modern',
     flooring: 'Light Oak',
     wallColorPalette: ['White', 'Light Grey'],
     lightingTemperature: 'Warm',
@@ -20,7 +20,7 @@ export default function VirtualStagingPage() {
     const [stagedImage, setStagedImage] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [roomType, setRoomType] = useState('Living Room');
-    const [style, setStyle] = useState('Modern');
+    const [style, setStyle] = useState('modern');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,8 +37,8 @@ export default function VirtualStagingPage() {
         setIsGenerating(true);
 
         try {
-            // Update design system with selected style
-            const currentDesign = { ...defaultDesign, overallStyle: style };
+            // Update design system with selected style (casting to any to avoid strict type checks on runtime string)
+            const currentDesign = { ...defaultDesign, overallStyle: style as any };
 
             const res = await fetch('/api/virtual-stage', {
                 method: 'POST',
@@ -121,11 +121,11 @@ export default function VirtualStagingPage() {
                                         onChange={(e) => setStyle(e.target.value)}
                                         className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:border-primary-500 outline-none"
                                     >
-                                        <option>Modern</option>
-                                        <option>Minimalist</option>
-                                        <option>Scandinavian</option>
-                                        <option>Luxury</option>
-                                        <option>Industrial</option>
+                                        <option value="modern">Modern</option>
+                                        <option value="minimalist">Minimalist</option>
+                                        <option value="scandinavian">Scandinavian</option>
+                                        <option value="luxury">Luxury</option>
+                                        <option value="industrial">Industrial</option>
                                     </select>
                                 </div>
                             </div>
@@ -134,8 +134,8 @@ export default function VirtualStagingPage() {
                                 onClick={handleStage}
                                 disabled={!photo || isGenerating}
                                 className={`w-full mt-6 py-4 rounded-xl font-bold text-lg transition-all ${!photo || isGenerating
-                                        ? 'bg-gray-600 cursor-not-allowed'
-                                        : 'btn-primary hover:shadow-lg hover:shadow-primary-500/25'
+                                    ? 'bg-gray-600 cursor-not-allowed'
+                                    : 'btn-primary hover:shadow-lg hover:shadow-primary-500/25'
                                     }`}
                             >
                                 {isGenerating ? 'Staging Room...' : 'Generate Staging'}
