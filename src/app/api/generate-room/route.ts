@@ -139,32 +139,56 @@ export async function POST(request: NextRequest): Promise<NextResponse<GenerateR
             let styleReferenceBase64 = body.overviewBase64;
 
             if (styleReferenceBase64) {
-                // CASE B: GEOMETRY + STYLE REFERENCE (Texture Projection Mode)
-                planDrivenPrompt = `Role:
-You are a High-Fidelity Rendering Engine. 
+                // CASE B: GEOMETRY + STYLE REFERENCE (Final Fidelity Contract)
+                planDrivenPrompt = `You are an Architectural Rendering Engine operating under a Geometric & Design Fidelity Contract.
 
-Objective:
-Create a "Staged Room Perspective" by mentally projecting the textures from the Master Model (Image 2) onto the Geometry of the Plan (Image 1).
+Inputs:
+- Image 1: Floor Plan (governing GEOMETRY)
+- Image 2: 3D Home Overview (governing DESIGN)
+- Target Room Name: "${body.roomName}"
 
-INPUTS:
-Image 1: Geometry Map (Floor Plan)
-Image 2: Texture Atlas (3D Master Model)
+Mission:
+Produce a photorealistic interior render of the specified room that is a faithful perspective view of the SAME design shown in Image 2, constrained by the geometry in Image 1.
 
-INSTRUCTIONS:
-1. GEOMETRY: Build the room exactly as shown in Image 1.
-2. TEXTURE PROJECTION (CRITICAL):
-   - Look at the flooring in Image 2. Project that EXACT material onto the floor of this room.
-   - Look at the walls in Image 2. Project that EXACT paint/finish onto the walls of this room.
-3. FURNITURE CONSISTENCY (MANDATORY):
-   - Look at the furniture blobs in Image 2 (top-down view).
-   - INTERPOLATE the exact "Design DNA" of that furniture. 
-   - If Image 2 shows a "Modern Beige Sofa", you must render a "High-Fidelity Modern Beige Sofa".
-   - Do NOT change the style. If Image 2 is Minimalist, this room MUST be Minimalist.
-4. LIGHTING MATCH:
-   - Identify the lighting condition in Image 2 (e.g., "Warm Sunset" or "Cool Daylight").
-   - Replicate that EXACT lighting condition in this room.
+HARD CONSTRAINTS (non-negotiable):
 
-TASK: Render a photo-real perspective inside "${body.roomName}".
+1) Geometry Lock (Image 1 is law)
+- Do NOT change, mirror, rotate, resize, or reinterpret any walls, doors, or windows.
+- Room boundaries, openings, and proportions must match Image 1 exactly.
+- The camera view must exist *inside* the exact room footprint from Image 1.
+
+2) Design Lock (Image 2 is canon)
+- Treat Image 2 as the single source of truth for:
+  - Furniture types
+  - Furniture counts
+  - Furniture orientations
+  - Material palette
+  - Lighting temperature
+  - Overall style
+- You are NOT allowed to “improve” composition by changing layout.
+- If Image 2 shows:
+  - 6 dining chairs → render EXACTLY 6.
+  - Sofa facing East → it MUST face East.
+  - TV on South wall → it MUST be on the South wall.
+- Do not add decorative items or furniture not visible in Image 2.
+
+3) Consistency Rules
+- Floors, wall colors, cabinetry, hardware, and wood tones must match Image 2.
+- Lighting must match the same warmth, direction, and mood as Image 2.
+- Maintain visual continuity so that a viewer can mentally map this room back into Image 2.
+
+4) Error Handling
+- If geometry from Image 1 conflicts with design in Image 2, prioritize Image 1 for walls/openings and Image 2 for furniture/layout.
+- Never invent missing walls, doors, windows, or furniture.
+
+5) Output Quality
+- High-end real estate marketing quality.
+- Hyper-realistic materials, soft daylight, physically plausible shadows.
+- No fisheye or extreme wide-angle distortion.
+- Clean, professional architectural photography style.
+
+Goal:
+Render a room photo that looks like a camera was placed inside the exact same home shown in Image 2, without altering a single design decision, count, or orientation, and without violating the floor plan in Image 1.
 
 STAGING SPECIFICATION:
 ${interiorPrompt}`;
