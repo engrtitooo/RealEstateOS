@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import Navigation from '@/components/Navigation';
-import { DesignSystem } from '@/types/project';
+import Navigation from '../../components/Navigation';
+import { DesignSystem, StyleType } from '@/types/project';
 
 // Default Modern Design System
 const defaultDesign: DesignSystem = {
@@ -37,8 +37,8 @@ export default function VirtualStagingPage() {
         setIsGenerating(true);
 
         try {
-            // Update design system with selected style (casting to any to avoid strict type checks on runtime string)
-            const currentDesign = { ...defaultDesign, overallStyle: style as any };
+            // Update design system with selected style
+            const currentDesign = { ...defaultDesign, overallStyle: style as StyleType };
 
             const res = await fetch('/api/virtual-stage', {
                 method: 'POST',
