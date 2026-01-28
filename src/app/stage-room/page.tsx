@@ -2,8 +2,19 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import type { StyleType, StagePhotoResponse } from '@/types/project';
+import type { StyleType, DesignSystem } from '@/types/project';
 import AccessGate from '@/components/AccessGate';
+
+// Default Modern Design System for Virtual Staging
+const defaultDesign: DesignSystem = {
+    overallStyle: 'modern',
+    flooring: 'Light Oak',
+    wallColorPalette: ['White', 'Light Grey'],
+    lightingTemperature: 'Warm',
+    lightingStyle: 'Recessed',
+    furnitureAesthetic: 'Modern Minimalist',
+    materialMood: ['Matte', 'Natural']
+};
 
 const styles: { value: StyleType; label: string; description: string }[] = [
     { value: 'modern', label: 'Modern', description: 'Clean lines and contemporary aesthetics' },
@@ -18,6 +29,7 @@ const styles: { value: StyleType; label: string; description: string }[] = [
 
 export default function StageRoomPage() {
     const [selectedStyle, setSelectedStyle] = useState<StyleType>('modern');
+    const [roomType, setRoomType] = useState('Living Room');
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -70,18 +82,26 @@ export default function StageRoomPage() {
             // Extract base64 data from data URL
             const base64Data = imagePreview.split(',')[1];
 
-            const response = await fetch('/api/stage-photo', {
+            // Construct Design System
+            const currentDesign: DesignSystem = {
+                ...defaultDesign,
+                overallStyle: selectedStyle
+            };
+
+            const response = await fetch('/api/virtual-stage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    photoBase64: base64Data,
-                    style: selectedStyle,
-                    mimeType: imageFile.type,
-                    generateCaption: true,
+                    photoBase64: imagePreview, // The new API handles the data:image prefix stripping if needed, or we send raw. 
+                    // Wait, api/virtual-stage expects full base64 or without prefix? 
+                    // Step 981 code: "const cleanPhoto = body.photoBase64.replace(/^data:image\/\w+;base64,/, '');"
+                    // So we can send the full imagePreview string!
+                    roomType,
+                    designSystem: currentDesign
                 }),
             });
 
-            const data: StagePhotoResponse = await response.json();
+            const data = await response.json();
 
             if (!data.success) {
                 throw new Error(data.error || 'Failed to stage photo');
@@ -89,7 +109,7 @@ export default function StageRoomPage() {
 
             setStagedResult({
                 imageUrl: data.imageUrl!,
-                caption: data.caption,
+                caption: `Staged as ${roomType} (${selectedStyle})`
             });
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
@@ -167,6 +187,23 @@ export default function StageRoomPage() {
                                         onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
                                     />
                                 </div>
+                            </div>
+
+                            {/* Room Type Selector */}
+                            <div className="glass-card rounded-2xl p-6">
+                                <h2 className="text-xl font-display font-bold mb-4">Room Type</h2>
+                                <select
+                                    value={roomType}
+                                    onChange={(e) => setRoomType(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-primary-500 outline-none transition-all"
+                                >
+                                    <option className="bg-[#1a1f35]">Living Room</option>
+                                    <option className="bg-[#1a1f35]">Bedroom</option>
+                                    <option className="bg-[#1a1f35]">Children's Room</option>
+                                    <option className="bg-[#1a1f35]">Dining Room</option>
+                                    <option className="bg-[#1a1f35]">Home Office</option>
+                                    <option className="bg-[#1a1f35]">Kitchen</option>
+                                </select>
                             </div>
 
                             {/* Style Selector */}
