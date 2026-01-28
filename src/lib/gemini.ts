@@ -232,13 +232,19 @@ Look at this 3D Home Overview.
 Focus ONLY on the room labeled or identifying as "${roomName}".
 
 Your job is to write a STRICT LAYOUT SPECIFICATION for this room.
-1. List every piece of furniture visible in this room.
-2. Note the count (how many?).
-3. Note the exact orientation (facing window? facing door?).
-4. Note the color and material of each piece.
-5. Note the flooring and wall color used in this room.
+1. ARCHITECTURE (CRITICAL):
+   - Count the WINDOWS visible in this room. If zero, write "WINDOWS: 0".
+   - Count the DOORS visible.
+   - Note any unique architectural features.
+2. FURNITURE:
+   - List every piece of furniture visible.
+   - Note the EXACT count (e.g., "6 Dining Chairs").
+   - Note the orientation.
+   - Note color/material.
 
 Output format:
+- Windows: [Count] (Directly visible? implied?)
+- Doors: [Count]
 - Flooring: [Material/Color]
 - Walls: [Color]
 - Furniture List:
@@ -246,7 +252,7 @@ Output format:
   2. [Item] ...
 
 If the room is empty, say "Room is empty".
-Do NOT hallucinate furniture not present in the image.`;
+Do NOT hallucinate windows or furniture not present.`;
 
         const result = await model.generateContent([auditPrompt, imagePart]);
         return result.response.text();

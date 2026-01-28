@@ -161,9 +161,9 @@ INSTRUCTIONS:
 2. TEXTURE PROJECTION: Match Image 2's flooring, wall color, and lighting exactly.
 3. LAYOUT ENFORCEMENT (CRITICAL):
    - You MUST follow the "Verified Layout Specification" below.
-   - If it lists "1 Queen Bed", you render 1 Queen Bed.
-   - If it lists "2 Nightstands", you render 2 Nightstands.
-   - Orientation MUST match Image 2 logic.
+   - **WINDOWS**: If the Spec says "Windows: 0", you must NOT render any windows. Use artificial lighting only. Do NOT add fake windows for composition.
+   - **COUNTS**: If Spec lists "6 Chairs", you MUST render exactly 6. Not 4, not 8.
+   - **ORIENTATION**: Match the exact facing direction from the Spec.
 
 VERIFIED LAYOUT SPECIFICATION:
 ${layoutSpec}
