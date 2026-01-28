@@ -98,7 +98,7 @@ export default function AccessGate({ children }: AccessGateProps) {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <input
-                        type="text"
+                        type="password"
                         value={code}
                         onChange={(e) => setCode(e.target.value.toUpperCase())}
                         placeholder="Enter Access Code"

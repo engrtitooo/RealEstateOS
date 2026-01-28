@@ -25,13 +25,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<VerifyAcc
             );
         }
 
-        // Get the access code from environment variable
-        const validCode = process.env.ACCESS_CODE;
+        // Get the access code from environment variable or use HARDCODED FALLBACK for hackathon safety
+        const validCode = process.env.ACCESS_CODE || 'GEMINI2025';
 
         if (!validCode) {
-            // If no access code is configured, allow access (for development)
-            console.warn('ACCESS_CODE environment variable not set - allowing all access');
-            return NextResponse.json({ success: true });
+            // Should never happen with fallback, but good practice to fail closed
+            console.error('ACCESS_CODE not configured');
+            return NextResponse.json(
+                { success: false, error: 'System Configuration Error' },
+                { status: 500 }
+            );
         }
 
         // Verify the code (case-insensitive)
