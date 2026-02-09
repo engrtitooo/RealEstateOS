@@ -2,7 +2,6 @@
 
 **Transform empty properties into dream homes instantly with Gemini 3.0 Pro.**
 
-![Project Banner](public/banner-placeholder.png) <!-- Replace with an actual screenshot or banner -->
 
 ## 🏆 Built for the Google Gemini API Developer Competition
 **RealEstateOS** is an AI-powered platform that revolutionizes real estate marketing. By leveraging the advanced multimodal capabilities of **Gemini 3.0 Pro**, we automate the most expensive and time-consuming parts of selling a home: staging, design visualization, and listing creation.
