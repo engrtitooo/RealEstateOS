@@ -45,7 +45,7 @@ Stop struggling with descriptions. Based on the visual analysis of the home's fe
 
 ## 📸 Demo
 
-> **[https://youtu.be/poeUefa8qbE]** (https://youtu.be/poeUefa8qbE)
+> ✅ Live demo video: [YouTube](https://youtu.be/poeUefa8qbE)
 
 ### Screenshots
 | Virtual Staging | 3D Floor Plan |
