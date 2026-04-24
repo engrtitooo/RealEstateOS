@@ -1,7 +1,7 @@
 /**
  * Gemini AI Client Utilities
  * Centralized Gemini configuration and helper functions
- * STRICT MODE: Uses gemini-3-pro-image-preview exclusively for high-fidelity generation
+ * STRICT MODE: Uses gemini-3.1-pro exclusively for high-fidelity generation
  */
 
 import { GoogleGenerativeAI, Part } from '@google/generative-ai';
@@ -25,7 +25,7 @@ function getGenAI() {
 }
 
 // Single Truth Model ID
-const MODEL_ID = 'gemini-3-pro-image-preview';
+const MODEL_ID = 'gemini-3.1-pro';
 
 // Strict System Instruction for Geometric Fidelity
 const SYSTEM_INSTRUCTION = `Role: Architectural Visualization Specialist. Your highest priority is Structural Integrity. You MUST NOT alter, move, or resize structural elements (walls, windows, doors). You must only finish/furnish the empty space within the existing boundaries. Perspective matching is mandatory.`;
