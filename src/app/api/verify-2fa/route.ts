@@ -51,7 +51,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             token: sessionToken,
         });
 
-        // Set HttpOnly, SameSite=Strict cookie
+        // Set HttpOnly, SameSite=Strict true Session cookie (expires when browser closes)
         response.cookies.set({
             name: SESSION_COOKIE_NAME,
             value: sessionToken,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             path: '/',
-            maxAge: 24 * 60 * 60, // 24 hours
+            // Omit maxAge: This creates a true "Session" cookie that is destroyed when the browser closes.
         });
 
         return response;
