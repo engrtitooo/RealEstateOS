@@ -29,6 +29,17 @@ export default function AccessGate({ children }: AccessGateProps) {
         // 1. Invalidate legacy insecure auth states to force sign-in for returning users
         localStorage.removeItem(ACCESS_STORAGE_KEY);
 
+        // Tie authentication tightly to this specific browser tab/window using sessionStorage
+        const isTabSessionActive = sessionStorage.getItem('tab_session_active');
+
+        if (!isTabSessionActive) {
+            // New tab or browser closed! Force logout via API to destroy HttpOnly cookie
+            fetch('/api/logout', { method: 'POST' }).finally(() => {
+                setIsVerified(false);
+            });
+            return;
+        }
+
         // 2. Check the real HttpOnly session cookie state via API
         fetch('/api/check-auth')
             .then(res => res.json())
@@ -103,6 +114,10 @@ export default function AccessGate({ children }: AccessGateProps) {
                 if (data.token) {
                     localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
                 }
+                
+                // Mark this specific tab as authenticated
+                sessionStorage.setItem('tab_session_active', 'true');
+                
                 // Relying entirely on HttpOnly cookie set by the server for session state now
                 setIsVerified(true);
             } else {
