@@ -26,12 +26,18 @@ export default function AccessGate({ children }: AccessGateProps) {
 
     // Check session on mount
     useEffect(() => {
-        const stored = localStorage.getItem(ACCESS_STORAGE_KEY);
-        if (stored === 'true') {
-            setIsVerified(true);
-        } else {
-            setIsVerified(false);
-        }
+        // 1. Invalidate legacy insecure auth states to force sign-in for returning users
+        localStorage.removeItem(ACCESS_STORAGE_KEY);
+
+        // 2. Check the real HttpOnly session cookie state via API
+        fetch('/api/check-auth')
+            .then(res => res.json())
+            .then(data => {
+                setIsVerified(!!data.authenticated);
+            })
+            .catch(() => {
+                setIsVerified(false);
+            });
     }, []);
 
     // Step 1: Submit Password
@@ -97,7 +103,7 @@ export default function AccessGate({ children }: AccessGateProps) {
                 if (data.token) {
                     localStorage.setItem(TOKEN_STORAGE_KEY, data.token);
                 }
-                localStorage.setItem(ACCESS_STORAGE_KEY, 'true');
+                // Relying entirely on HttpOnly cookie set by the server for session state now
                 setIsVerified(true);
             } else {
                 setError(data.error || 'Invalid 2FA code');
