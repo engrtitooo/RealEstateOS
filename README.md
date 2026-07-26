@@ -137,8 +137,29 @@ Stop struggling with descriptions. Based on the visual analysis of the home's fe
 
 ---
 
+## 🔒 Security & API Protection (Open-Source Guidance)
+
+To protect your application and API key when hosting or forking this repository on GitHub:
+
+1. **Backend API Route Protection**: All API routes (`/api/*`) require a valid signed session token issued via 2FA verification before any Gemini AI calls are executed. Direct unauthenticated requests to API endpoints return `401 Unauthorized`.
+2. **2-Step Authentication (Password + Email 2FA)**:
+   - Step 1: User enters master `APP_PASSWORD`.
+   - Step 2: Server generates a 6-digit OTP code sent to `ADMIN_EMAIL`.
+3. **Environment Configuration**:
+   Create a `.env` file (never committed to git):
+   ```env
+   GOOGLE_API_KEY=your_gemini_api_key_here
+   ADMIN_EMAIL=your_email@example.com
+   APP_PASSWORD=your_master_password_here
+   JWT_SECRET=your_secret_signing_key_at_least_32_chars
+   ```
+4. **Rate Limiting**: Sliding window rate-limiting is active on authentication and API routes to prevent brute-force attacks and quota abuse.
+
+---
+
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 This project is licensed under the MIT License.
+

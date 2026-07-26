@@ -6,6 +6,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeImage, getTextModel, editImage } from '@/lib/gemini';
+import { verifyApiAuth } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rate-limit';
 import type {
     StagePhotoRequest,
     StagePhotoResponse,
@@ -95,6 +97,24 @@ Output ONLY the caption, nothing else.`;
 
 export async function POST(request: NextRequest): Promise<NextResponse<StagePhotoResponse>> {
     try {
+        // Auth Guard
+        const auth = await verifyApiAuth(request);
+        if (!auth.authorized) {
+            return NextResponse.json(
+                { success: false, error: auth.error || 'Unauthorized' },
+                { status: 401 }
+            );
+        }
+
+        // Rate Limit Check
+        const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+        const rateCheck = checkRateLimit(`api_stagephoto:${ip}`, 10, 60 * 1000);
+        if (!rateCheck.success) {
+            return NextResponse.json(
+                { success: false, error: 'Rate limit exceeded. Please wait a minute.' },
+                { status: 429 }
+            );
+        }
         // Parse request body
         const body = await request.json() as StagePhotoRequest;
 

@@ -24,8 +24,8 @@ function getGenAI() {
     return genAIInstance;
 }
 
-// Single Truth Model ID
-const MODEL_ID = 'gemini-3.1-pro';
+// Single Truth Model ID - Latest Gemini Pro Model (Configurable via GEMINI_MODEL_ID env var)
+const MODEL_ID = process.env.GEMINI_MODEL_ID || process.env.MODEL_ID || 'gemini-3.1-pro';
 
 // Strict System Instruction for Geometric Fidelity
 const SYSTEM_INSTRUCTION = `Role: Architectural Visualization Specialist. Your highest priority is Structural Integrity. You MUST NOT alter, move, or resize structural elements (walls, windows, doors). You must only finish/furnish the empty space within the existing boundaries. Perspective matching is mandatory.`;
